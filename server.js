@@ -5,7 +5,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const { DatabaseSync } = require('node:sqlite');
+const { createClient } = require('@libsql/client');
+const cloudinary = require('cloudinary').v2;
 
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, 'data');
@@ -14,69 +15,10 @@ const UPLOADS_DIR = process.env.UPLOADS_DIR ? path.resolve(process.env.UPLOADS_D
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-const db = new DatabaseSync(path.join(DATA_DIR, 'herbal_store.db'));
-db.exec(`
-  PRAGMA journal_mode = WAL;
-  PRAGMA synchronous = NORMAL;
-
-  CREATE TABLE IF NOT EXISTS categories (
-    name TEXT PRIMARY KEY,
-    sortOrder INTEGER NOT NULL DEFAULT 0
-  );
-
-  CREATE TABLE IF NOT EXISTS products (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    category TEXT NOT NULL,
-    price REAL NOT NULL DEFAULT 0,
-    oldPrice REAL NOT NULL DEFAULT 0,
-    rating REAL NOT NULL DEFAULT 5.0,
-    reviewCount INTEGER NOT NULL DEFAULT 0,
-    image TEXT NOT NULL,
-    featured INTEGER NOT NULL DEFAULT 0,
-    inStock INTEGER NOT NULL DEFAULT 1,
-    shortDesc TEXT DEFAULT '',
-    description TEXT DEFAULT '',
-    benefits TEXT DEFAULT '[]',
-    ingredients TEXT DEFAULT '',
-    usage TEXT DEFAULT '',
-    createdAt INTEGER NOT NULL
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_products_created ON products(createdAt DESC);
-  CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
-
-  CREATE TABLE IF NOT EXISTS reviews (
-    id TEXT PRIMARY KEY,
-    author TEXT NOT NULL,
-    location TEXT NOT NULL,
-    rating INTEGER NOT NULL DEFAULT 5,
-    date TEXT NOT NULL,
-    productName TEXT,
-    text TEXT NOT NULL,
-    photoUrl TEXT DEFAULT '',
-    hasPhoto INTEGER NOT NULL DEFAULT 0,
-    isApproved INTEGER NOT NULL DEFAULT 1,
-    isFeatured INTEGER NOT NULL DEFAULT 1,
-    createdAt INTEGER NOT NULL
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(createdAt DESC);
-  CREATE INDEX IF NOT EXISTS idx_reviews_approved_created ON reviews(isApproved, createdAt DESC);
-  CREATE INDEX IF NOT EXISTS idx_reviews_photo_created ON reviews(isApproved, hasPhoto, createdAt DESC);
-  CREATE INDEX IF NOT EXISTS idx_reviews_rating_created ON reviews(isApproved, rating, createdAt DESC);
-
-  CREATE TABLE IF NOT EXISTS admin_config (
-    key TEXT PRIMARY KEY,
-    value TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS admin_sessions (
-    token TEXT PRIMARY KEY,
-    createdAt INTEGER NOT NULL,
-    expiresAt INTEGER NOT NULL
-  );
-`);
+const db = createClient({
+  url: process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN
+});
 
 // Default Categories
 const DEFAULT_CATEGORIES = [
@@ -112,7 +54,7 @@ const DEFAULT_PRODUCTS = [
     ],
     ingredients: "Bitter leaf (Vernonia amygdalina), Ginger root, Turmeric, Moringa oleifera, Licorice root, Indigenous Nigerian forest roots and bark extracts.",
     usage: "Take 1 small tot glass (approx. 30ml - 50ml) morning before breakfast and evening after dinner. Shake vigorously before use.",
-    createdAt: 1761000006000
+    createdAt: 1761000025000
   },
   {
     id: "p2",
@@ -135,7 +77,7 @@ const DEFAULT_PRODUCTS = [
     ],
     ingredients: "Wild Moringa leaves, Senna leaves, Lime extract, Dandelion root, Milk Thistle extract, Herbal mint essence.",
     usage: "Take 1 shot glass (40ml) every morning with warm water for 7 consecutive days for thorough cleansing.",
-    createdAt: 1761000005000
+    createdAt: 1761000024000
   },
   {
     id: "p3",
@@ -158,7 +100,7 @@ const DEFAULT_PRODUCTS = [
     ],
     ingredients: "African wild Ginseng, Ashwagandha, Cloves, Cinnamon bark, Mondia whitei (Isirigun), Nutmeg extract.",
     usage: "Use dropper to place 15-20 drops under tongue or dilute in 100ml warm water, once or twice daily.",
-    createdAt: 1761000004000
+    createdAt: 1761000023000
   },
   {
     id: "p4",
@@ -181,7 +123,7 @@ const DEFAULT_PRODUCTS = [
     ],
     ingredients: "Slippery elm bark, Raw cabbage leaf extract, Deglycyrrhizinated licorice, Plantain root, Aloe vera gel.",
     usage: "Take 2 tablespoons 30 minutes before meals, 3 times daily.",
-    createdAt: 1761000003000
+    createdAt: 1761000022000
   },
   {
     id: "p5",
@@ -204,7 +146,7 @@ const DEFAULT_PRODUCTS = [
     ],
     ingredients: "Chasteberry, Wild yam root, Red raspberry leaf, African ginger root, Maca extract, indigenous cleansing herbs.",
     usage: "Take 1 glass cup twice daily from the end of menstruation for 21 days.",
-    createdAt: 1761000002000
+    createdAt: 1761000021000
   },
   {
     id: "p6",
@@ -227,6 +169,348 @@ const DEFAULT_PRODUCTS = [
     ],
     ingredients: "Raw Neem leaf extract, Pure Turmeric, Aloe vera gel, African black soap, Tea tree oil, Shea butter oil.",
     usage: "Lather onto damp skin, allow to sit for 3 minutes, then rinse off thoroughly with clean water.",
+    createdAt: 1761000020000
+  },
+  {
+    id: "p7",
+    name: "Malaria & Typhoid Root Flush Decoction",
+    category: "Immunity & Detox",
+    price: 11000,
+    oldPrice: 13500,
+    rating: 4.9,
+    reviewCount: 34,
+    image: "images/product-herbal-mixture.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Fast-acting bitter root decoction for clearing recurrent malaria parasites and enteric fever symptoms.",
+    description: "Traditional antimalarial bark and leaf decoction prepared from Enantia chlorantha (Awopa), lemongrass, and pawpaw leaves to flush resistant parasites and restore appetite.",
+    benefits: ["Clears stubborn malaria and typhoid fever", "Relieves body aches, chills, and headaches", "Supports red blood cell recovery"],
+    ingredients: "Awopa bark, Carica papaya leaf, Cymbopogon citratus, Azadirachta indica, Citrus aurantifolia.",
+    usage: "Take half glass cup morning and night after meals for 5 days.",
+    createdAt: 1761000019000
+  },
+  {
+    id: "p8",
+    name: "Cardio-Clear Blood Pressure & Heart Tonic",
+    category: "General Health",
+    price: 14500,
+    oldPrice: 17500,
+    rating: 4.9,
+    reviewCount: 21,
+    image: "images/product-detox-tonic.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Calming vascular tonic that supports healthy blood pressure, arterial flexibility, and restful sleep.",
+    description: "Formulated with hibiscus calyx (Zobo), aged garlic bulb extract, and mistletoe leaves to relax blood vessels and support healthy circulation.",
+    benefits: ["Supports normal blood pressure readings", "Promotes healthy cholesterol balance", "Calms palpitations and vascular tension"],
+    ingredients: "Hibiscus sabdariffa, Allium sativum, African Mistletoe, Crataegus berry, Ginger.",
+    usage: "Take 30ml morning and evening after food.",
+    createdAt: 1761000018000
+  },
+  {
+    id: "p9",
+    name: "JointEase Arthritis & Rheumatism Liniment Brew",
+    category: "General Health",
+    price: 13000,
+    oldPrice: 16000,
+    rating: 4.8,
+    reviewCount: 19,
+    image: "images/product-vitality-extract.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Anti-inflammatory herbal formula for waist pain, stiff knees, swollen joints, and backache relief.",
+    description: "Combines curcuma, boswellia resin, and warming African pepper extracts to reduce joint inflammation and restore comfortable mobility.",
+    benefits: ["Soothes chronic waist, knee, and back pain", "Reduces joint swelling and morning stiffness", "Nourishes cartilage and connective tissues"],
+    ingredients: "Turmeric root, Boswellia serrata, Xylopia aethiopica (Uda), Ginger root, Devil's claw.",
+    usage: "Take 40ml twice daily after meals.",
+    createdAt: 1761000017000
+  },
+  {
+    id: "p10",
+    name: "GlucoBalance Sugar Control Bitter Extract",
+    category: "Immunity & Detox",
+    price: 15500,
+    oldPrice: 18500,
+    rating: 5.0,
+    reviewCount: 27,
+    image: "images/product-herbal-mixture.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Metabolic herbal extract formulated to support healthy blood sugar regulation and pancreatic vitality.",
+    description: "Crafted from bitter melon, scent leaf, and gymnema botanicals to assist natural glucose metabolism and reduce sugar cravings.",
+    benefits: ["Supports balanced blood glucose levels", "Reduces frequent nighttime urination", "Boosts metabolic energy without spikes"],
+    ingredients: "Momordica charantia, Ocimum gratissimum, Vernonia amygdalina, Cinnamon bark, Fenugreek seed.",
+    usage: "Take 30ml every morning 20 minutes before breakfast.",
+    createdAt: 1761000016000
+  },
+  {
+    id: "p11",
+    name: "Men's Kingly Virility & Prostate Guard Roots",
+    category: "Vitality & Strength",
+    price: 17000,
+    oldPrice: 21000,
+    rating: 5.0,
+    reviewCount: 41,
+    image: "images/product-vitality-extract.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Concentrated male root blend supporting prostate comfort, urinary flow, and peak masculine stamina.",
+    description: "Infused with Pygeum africanum bark, pumpkin seed extract, and Mondia whitei roots for long-term male reproductive and prostate wellness.",
+    benefits: ["Supports healthy prostate size and urinary flow", "Enhances masculine drive and endurance", "Combats lower back fatigue"],
+    ingredients: "Pygeum africanum, Mondia whitei, Cucurbita pepo seed, Garcinia kola (Bitter kola), Zingiber officinale.",
+    usage: "Take 1 tot glass (40ml) every night after dinner.",
+    createdAt: 1761000015000
+  },
+  {
+    id: "p12",
+    name: "Kidney & Urinary Tract Cleansing Elixir",
+    category: "Immunity & Detox",
+    price: 13500,
+    oldPrice: 16000,
+    rating: 4.8,
+    reviewCount: 18,
+    image: "images/product-detox-tonic.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Gentle diuretic botanical flush to cleanse the kidneys, bladder, and urinary tract.",
+    description: "Formulated with Phyllanthus niruri (Chanca Piedra), corn silk, and dandelion leaf to flush uric acid and support clear kidney filtration.",
+    benefits: ["Flushes kidney sediment and urinary impurities", "Soothes urinary burning and discomfort", "Supports healthy fluid balance"],
+    ingredients: "Phyllanthus niruri, Zea mays silk, Taraxacum officinale, Hibiscus, Lemon peel.",
+    usage: "Take 40ml twice daily with plenty of clean water.",
+    createdAt: 1761000014000
+  },
+  {
+    id: "p13",
+    name: "Pile-Free & Colon Relief Herbal Mixture",
+    category: "Digestion & Ulcer",
+    price: 10500,
+    oldPrice: 13000,
+    rating: 4.9,
+    reviewCount: 33,
+    image: "images/product-herbal-mixture.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Targeted herbal remedy for internal and external hemorrhoids (jedi-jedi), constipation, and waist heaviness.",
+    description: "Traditional Yoruba jedi-jedi formulation that shrinks inflamed rectal veins, softens stool naturally, and relieves lower back heaviness.",
+    benefits: ["Relieves internal and external pile discomfort", "Prevents hard stools and straining", "Clears excess sugar buildup in the gut"],
+    ingredients: "Sorghum bicolor sheath, Khaya ivorensis bark, Senna pod, Allium cepa, Cloves.",
+    usage: "Take 1 shot glass morning and evening after meals.",
+    createdAt: 1761000013000
+  },
+  {
+    id: "p14",
+    name: "Fibroid & Ovarian Wellness Root Infusion",
+    category: "Hormonal & Fertility",
+    price: 18000,
+    oldPrice: 22000,
+    rating: 5.0,
+    reviewCount: 26,
+    image: "images/product-vitality-extract.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Intensive womb-care root infusion to support uterine health, reduce heavy flow, and ease pelvic pressure.",
+    description: "Slow-steeped forest roots and soursop leaf extracts designed to promote healthy uterine tissue and balanced female cycles.",
+    benefits: ["Eases pelvic fullness and menstrual clotting", "Supports healthy uterine and ovarian tissue", "Boosts iron levels after heavy cycles"],
+    ingredients: "Annona muricata leaf, Tetrapleura tetraptera (Aridan), Kigelia africana, Curcuma longa, Negro pepper.",
+    usage: "Take half glass cup morning and night for 30 days.",
+    createdAt: 1761000012000
+  },
+  {
+    id: "p15",
+    name: "BreatheEasy Asthma & Chest Congestion Syrup",
+    category: "General Health",
+    price: 11000,
+    oldPrice: 13500,
+    rating: 4.8,
+    reviewCount: 17,
+    image: "images/product-detox-tonic.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Warming respiratory herbal syrup with raw forest honey, bitter kola, and eucalyptus for clear airways.",
+    description: "Loosens stubborn phlegm, calms persistent coughs, and opens bronchial passages naturally.",
+    benefits: ["Clears chest congestion and phlegm", "Soothes dry and productive coughs", "Supports easy breathing during cold weather"],
+    ingredients: "Raw forest honey, Garcinia kola, Zingiber officinale, Abrus precatorius, Peppermint leaf.",
+    usage: "Take 2 tablespoons 3 times daily.",
+    createdAt: 1761000011000
+  },
+  {
+    id: "p16",
+    name: "Clear-Infection Broadband Herbal Antibiotic",
+    category: "Immunity & Detox",
+    price: 15000,
+    oldPrice: 18000,
+    rating: 5.0,
+    reviewCount: 39,
+    image: "images/product-herbal-mixture.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Potent antimicrobial herbal cleanser for stubborn bacterial, fungal, and pelvic infections.",
+    description: "Formulated with allicin-rich garlic, neem bark, and golden seal alternatives to combat recurring internal infections and itching.",
+    benefits: ["Targets stubborn internal and pelvic infections", "Soothes unusual discharge and itching", "Reinforces natural mucosal immunity"],
+    ingredients: "Azadirachta indica bark, Allium sativum, Vernonia amygdalina, Syzygium aromaticum, Citrus aurantifolia.",
+    usage: "Take 40ml morning and night for 10 consecutive days.",
+    createdAt: 1761000010000
+  },
+  {
+    id: "p17",
+    name: "Blood Builder & Sickle Cell Support Tonic",
+    category: "General Health",
+    price: 12000,
+    oldPrice: 14500,
+    rating: 4.9,
+    reviewCount: 25,
+    image: "images/product-detox-tonic.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Iron-rich botanical blood tonic made from sorghum leaf sheath, fluted pumpkin, and moringa.",
+    description: "Rapidly replenishes hemoglobin levels, combats dizziness and pallor, and nourishes red blood cells naturally.",
+    benefits: ["Boosts blood count and iron levels naturally", "Relieves chronic tiredness and dizziness", "Safe and nourishing for recovering patients"],
+    ingredients: "Sorghum bicolor (Poporo), Telfairia occidentalis (Ugu), Moringa oleifera, Hibiscus, Date syrup.",
+    usage: "Take half glass cup twice daily after meals.",
+    createdAt: 1761000009000
+  },
+  {
+    id: "p18",
+    name: "Digestive Bitters & Flat Tummy Elixir",
+    category: "Digestion & Ulcer",
+    price: 10000,
+    oldPrice: 12500,
+    rating: 4.8,
+    reviewCount: 28,
+    image: "images/product-herbal-mixture.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Aromatic digestive bitters to stimulate bile flow, burn abdominal fat deposits, and relieve gas.",
+    description: "Taken before or after heavy meals to speed up digestion, prevent acid reflux, and trim waistline bloating.",
+    benefits: ["Relieves gas, indigestion, and sluggish bowels", "Supports healthy metabolism and flat tummy", "Curbs late-night appetite"],
+    ingredients: "Cinnamon, Fennel seed, Ginger, Bitter orange peel, Green tea extract, Senna.",
+    usage: "Take 1 shot glass (30ml) after dinner daily.",
+    createdAt: 1761000008000
+  },
+  {
+    id: "p19",
+    name: "Eczema & Fungal Clear Botanical Balm",
+    category: "Skin Wellness",
+    price: 8500,
+    oldPrice: 10500,
+    rating: 4.9,
+    reviewCount: 20,
+    image: "images/product-detox-tonic.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Concentrated herbal salve for ringworm, eczema patches, athlete's foot, and skin reactions.",
+    description: "Blends Cassia alata (Asunwon) leaf extract with unrefined shea butter and tea tree oil for rapid topical skin repair.",
+    benefits: ["Clears stubborn ringworm and fungal patches", "Stops intense skin itching and scaling", "Moisturizes and repairs cracked skin"],
+    ingredients: "Senna alata (Asunwon), Unrefined Shea Butter, Neem oil, Tea tree oil, Camwood (Osun).",
+    usage: "Apply a thin layer to clean, dry affected skin morning and night.",
+    createdAt: 1761000007000
+  },
+  {
+    id: "p20",
+    name: "Deep Sleep & Nerve Calm Herbal Infusion",
+    category: "General Health",
+    price: 11500,
+    oldPrice: 14000,
+    rating: 4.9,
+    reviewCount: 16,
+    image: "images/product-vitality-extract.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Non-habit-forming botanical relaxant for insomnia, stress tension, and racing thoughts.",
+    description: "Gentle infusion of passionflower, chamomile, lemongrass, and ashwagandha to quiet the nervous system and promote deep restorative sleep.",
+    benefits: ["Promotes deep, uninterrupted nighttime sleep", "Eases nervous tension and stress headaches", "Wake up refreshed without grogginess"],
+    ingredients: "Passiflora incarnata, Matricaria chamomilla, Withania somnifera, Lemongrass, Nutmeg.",
+    usage: "Take 30ml in warm water 45 minutes before bedtime.",
+    createdAt: 1761000006000
+  },
+  {
+    id: "p21",
+    name: "Postpartum Womb Flush & Lactation Herbs",
+    category: "Hormonal & Fertility",
+    price: 13500,
+    oldPrice: 16500,
+    rating: 5.0,
+    reviewCount: 23,
+    image: "images/product-vitality-extract.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Warming traditional spice and root tonic for new mothers to tone the womb and support breastmilk flow.",
+    description: "Prepared with Uda, Uziza, Aridan, and fenugreek to help cleanse postpartum lochia and nourish nursing mothers.",
+    benefits: ["Gently cleanses and tones the womb after childbirth", "Supports healthy breastmilk production", "Restores core warmth and strength"],
+    ingredients: "Xylopia aethiopica (Uda), Piper guineense (Uziza), Tetrapleura tetraptera, Fenugreek, Ginger.",
+    usage: "Take 1 warm cup morning and evening.",
+    createdAt: 1761000005000
+  },
+  {
+    id: "p22",
+    name: "Liver Guard & Hepatitis Recovery Tonic",
+    category: "Immunity & Detox",
+    price: 16000,
+    oldPrice: 19500,
+    rating: 4.9,
+    reviewCount: 22,
+    image: "images/product-detox-tonic.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Hepatoprotective herbal formula to regenerate liver cells, clear jaundice tint, and detoxify enzymes.",
+    description: "Combines Milk Thistle (Silymarin), Phyllanthus amarus, and turmeric root to shield and repair overworked liver tissue.",
+    benefits: ["Supports healthy liver enzyme levels", "Assists recovery from fatty liver and toxicity", "Improves bile flow and skin clarity"],
+    ingredients: "Silybum marianum, Phyllanthus amarus, Curcuma longa, Taraxacum root, Bitter leaf.",
+    usage: "Take 40ml twice daily before meals.",
+    createdAt: 1761000004000
+  },
+  {
+    id: "p23",
+    name: "Royal Honey & Ginseng Stamina Booster",
+    category: "Vitality & Strength",
+    price: 16000,
+    oldPrice: 19000,
+    rating: 5.0,
+    reviewCount: 35,
+    image: "images/product-vitality-extract.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Pure wildflower honey infused with Panax ginseng, maca root, and royal jelly for peak physical vitality.",
+    description: "A delicious, fast-absorbing energy tonic for busy professionals, athletes, and couples seeking natural stamina.",
+    benefits: ["Delivers sustained natural energy without crash", "Supports reproductive vitality in men and women", "Strengthens immune resilience"],
+    ingredients: "Wild Nigerian forest honey, Panax ginseng, Lepidium meyenii (Maca), Ginger, Cloves.",
+    usage: "Take 1 tablespoon daily straight or mixed into warm tea.",
+    createdAt: 1761000003000
+  },
+  {
+    id: "p24",
+    name: "Blemish-Free Turmeric & Neem Facial Toner",
+    category: "Skin Wellness",
+    price: 9000,
+    oldPrice: 11500,
+    rating: 4.8,
+    reviewCount: 19,
+    image: "images/product-detox-tonic.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Botanical clarifying toner for dark spots, hyperpigmentation, razor bumps, and oily skin.",
+    description: "Distilled rosewater, neem leaf hydrosol, licorice root, and turmeric extract to fade dark marks and tighten pores gently.",
+    benefits: ["Fades dark spots and acne scars naturally", "Calms razor bumps and skin redness", "Balances excess facial oil"],
+    ingredients: "Neem hydrosol, Curcuma longa extract, Licorice root, Aloe vera juice, Witch hazel.",
+    usage: "Apply with cotton pad onto clean face morning and night.",
+    createdAt: 1761000002000
+  },
+  {
+    id: "p25",
+    name: "Complete Family Immune Shield Herbal Pack",
+    category: "General Health",
+    price: 22000,
+    oldPrice: 26000,
+    rating: 5.0,
+    reviewCount: 44,
+    image: "images/product-herbal-mixture.jpg",
+    featured: 0,
+    inStock: 1,
+    shortDesc: "Value family bottle of our multi-herb immune and digestive shield for year-round household wellness.",
+    description: "Our comprehensive all-in-one family herbal tonic combining immune boosters, gentle detoxifiers, and antioxidant roots.",
+    benefits: ["Protects the whole family against seasonal illnesses", "Keeps digestion regular and blood purified", "Economical family-size preparation"],
+    ingredients: "Bitter leaf, Moringa, Ginger, Turmeric, Lemongrass, Cloves, Citrus peel, Hibiscus.",
+    usage: "Adults: 40ml twice daily. Youths (12+): 20ml once daily after food.",
     createdAt: 1761000001000
   }
 ];
@@ -300,31 +584,94 @@ const DEFAULT_REVIEWS = [
   }
 ];
 
-function seedCategoriesIfNeeded(forceReset = false) {
+async function createTablesIfNeeded() {
+  await db.batch([
+    `CREATE TABLE IF NOT EXISTS categories (
+      name TEXT PRIMARY KEY,
+      sortOrder INTEGER NOT NULL DEFAULT 0
+    )`,
+    `CREATE TABLE IF NOT EXISTS products (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      price REAL NOT NULL DEFAULT 0,
+      oldPrice REAL NOT NULL DEFAULT 0,
+      rating REAL NOT NULL DEFAULT 5.0,
+      reviewCount INTEGER NOT NULL DEFAULT 0,
+      image TEXT NOT NULL,
+      featured INTEGER NOT NULL DEFAULT 0,
+      inStock INTEGER NOT NULL DEFAULT 1,
+      shortDesc TEXT DEFAULT '',
+      description TEXT DEFAULT '',
+      benefits TEXT DEFAULT '[]',
+      ingredients TEXT DEFAULT '',
+      usage TEXT DEFAULT '',
+      createdAt INTEGER NOT NULL
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_products_created ON products(createdAt DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_products_category ON products(category)`,
+    `CREATE TABLE IF NOT EXISTS reviews (
+      id TEXT PRIMARY KEY,
+      author TEXT NOT NULL,
+      location TEXT NOT NULL,
+      rating INTEGER NOT NULL DEFAULT 5,
+      date TEXT NOT NULL,
+      productName TEXT,
+      text TEXT NOT NULL,
+      photoUrl TEXT DEFAULT '',
+      hasPhoto INTEGER NOT NULL DEFAULT 0,
+      isApproved INTEGER NOT NULL DEFAULT 1,
+      isFeatured INTEGER NOT NULL DEFAULT 1,
+      createdAt INTEGER NOT NULL
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(createdAt DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_reviews_approved_created ON reviews(isApproved, createdAt DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_reviews_photo_created ON reviews(isApproved, hasPhoto, createdAt DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_reviews_rating_created ON reviews(isApproved, rating, createdAt DESC)`,
+    `CREATE TABLE IF NOT EXISTS admin_config (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS admin_sessions (
+      token TEXT PRIMARY KEY,
+      createdAt INTEGER NOT NULL,
+      expiresAt INTEGER NOT NULL
+    )`
+  ], 'write');
+}
+
+async function seedCategoriesIfNeeded(forceReset = false) {
   if (forceReset) {
-    db.exec('DELETE FROM categories;');
+    await db.execute('DELETE FROM categories');
   }
-  const countRow = db.prepare('SELECT COUNT(*) as cnt FROM categories').get();
-  if (!countRow || countRow.cnt === 0) {
-    const insert = db.prepare('INSERT OR IGNORE INTO categories (name, sortOrder) VALUES (?, ?)');
-    DEFAULT_CATEGORIES.forEach((cat, idx) => insert.run(cat, idx));
+  const countRes = await db.execute('SELECT COUNT(*) as cnt FROM categories');
+  const cnt = Number(countRes.rows[0]?.cnt || 0);
+  if (cnt === 0) {
+    const statements = DEFAULT_CATEGORIES.map((cat, idx) => ({
+      sql: 'INSERT OR IGNORE INTO categories (name, sortOrder) VALUES (?, ?)',
+      args: [cat, idx]
+    }));
+    await db.batch(statements, 'write');
   }
 }
 
-function seedProductsIfNeeded(forceReset = false) {
+async function seedProductsIfNeeded(forceReset = false) {
   if (forceReset) {
-    db.exec('DELETE FROM products;');
+    await db.execute('DELETE FROM products');
   }
-  const countRow = db.prepare('SELECT COUNT(*) as cnt FROM products').get();
-  if (!countRow || countRow.cnt === 0) {
-    const insert = db.prepare(`
-      INSERT INTO products (
+  const countRes = await db.execute('SELECT COUNT(*) as cnt FROM products');
+  const cnt = Number(countRes.rows[0]?.cnt || 0);
+  if (cnt === 0) {
+    const categoryStatements = DEFAULT_CATEGORIES.map((cat, idx) => ({
+      sql: 'INSERT OR IGNORE INTO categories (name, sortOrder) VALUES (?, ?)',
+      args: [cat, idx]
+    }));
+    const productStatements = DEFAULT_PRODUCTS.map(p => ({
+      sql: `INSERT OR IGNORE INTO products (
         id, name, category, price, oldPrice, rating, reviewCount,
         image, featured, inStock, shortDesc, description, benefits, ingredients, usage, createdAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    for (const p of DEFAULT_PRODUCTS) {
-      insert.run(
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
         p.id,
         p.name,
         p.category,
@@ -341,23 +688,24 @@ function seedProductsIfNeeded(forceReset = false) {
         p.ingredients,
         p.usage,
         p.createdAt
-      );
-    }
+      ]
+    }));
+    await db.batch([...categoryStatements, ...productStatements], 'write');
   }
 }
 
-function seedReviewsIfNeeded(forceReset = false) {
+async function seedReviewsIfNeeded(forceReset = false) {
   if (forceReset) {
-    db.exec('DELETE FROM reviews;');
+    await db.execute('DELETE FROM reviews');
   }
-  const countRow = db.prepare('SELECT COUNT(*) as cnt FROM reviews').get();
-  if (!countRow || countRow.cnt === 0) {
-    const insert = db.prepare(`
-      INSERT INTO reviews (id, author, location, rating, date, productName, text, photoUrl, hasPhoto, isApproved, isFeatured, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    for (const r of DEFAULT_REVIEWS) {
-      insert.run(
+  const countRes = await db.execute('SELECT COUNT(*) as cnt FROM reviews');
+  const cnt = Number(countRes.rows[0]?.cnt || 0);
+  if (cnt === 0) {
+    const statements = DEFAULT_REVIEWS.map(r => ({
+      sql: `INSERT OR IGNORE INTO reviews (
+        id, author, location, rating, date, productName, text, photoUrl, hasPhoto, isApproved, isFeatured, createdAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
         r.id,
         r.author,
         r.location,
@@ -370,38 +718,38 @@ function seedReviewsIfNeeded(forceReset = false) {
         r.isApproved,
         r.isFeatured,
         r.createdAt
-      );
-    }
+      ]
+    }));
+    await db.batch(statements, 'write');
   }
 }
 
-function seedAdminPinIfNeeded() {
-  const row = db.prepare("SELECT value FROM admin_config WHERE key = 'admin_pin_hash'").get();
-  if (!row) {
+async function seedAdminPinIfNeeded() {
+  const res = await db.execute("SELECT value FROM admin_config WHERE key = 'admin_pin_hash'");
+  if (res.rows.length === 0) {
     const initialPin = (process.env.ADMIN_INITIAL_PIN || '').trim();
     if (initialPin.length >= 6) {
       const initialHash = bcrypt.hashSync(initialPin, 10);
-      db.prepare("INSERT INTO admin_config (key, value) VALUES ('admin_pin_hash', ?)").run(initialHash);
+      await db.execute({
+        sql: "INSERT OR IGNORE INTO admin_config (key, value) VALUES ('admin_pin_hash', ?)",
+        args: [initialHash]
+      });
     } else {
       console.warn('[Security] ADMIN_INITIAL_PIN (min 6 chars) is not set in .env and no PIN hash exists in the database yet.');
     }
   }
 }
 
-function cleanupExpiredSessions() {
+async function cleanupExpiredSessions() {
   try {
-    db.prepare('DELETE FROM admin_sessions WHERE expiresAt <= ?').run(Date.now());
+    await db.execute({
+      sql: 'DELETE FROM admin_sessions WHERE expiresAt <= ?',
+      args: [Date.now()]
+    });
   } catch (err) {
-    console.error('Error cleaning expired sessions:', err);
+    console.error('Error cleaning expired sessions:', err.message);
   }
 }
-
-seedCategoriesIfNeeded(false);
-seedProductsIfNeeded(false);
-seedReviewsIfNeeded(false);
-seedAdminPinIfNeeded();
-cleanupExpiredSessions();
-setInterval(cleanupExpiredSessions, 60 * 60 * 1000).unref();
 
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024; // 3 MB
 
@@ -440,17 +788,17 @@ function createValidationError(message) {
   return err;
 }
 
-// Validate and save uploaded image to /uploads with random filename (never using user filename)
-function saveValidatedImageToDisk(imageInput, defaultFallback = '') {
+// Validate image (<= 3 MB, real JPG/PNG/WEBP magic bytes) and upload to Cloudinary
+async function uploadValidatedImageToCloudinary(imageInput, defaultFallback = '') {
   if (!imageInput || typeof imageInput !== 'string') return defaultFallback;
   const trimmed = imageInput.trim();
   if (!trimmed) return defaultFallback;
 
   if (!trimmed.startsWith('data:')) {
-    // Allow only safe relative preset paths inside images/ or uploads/ with allowed extensions
+    // Allow safe relative preset paths OR existing Cloudinary secure URLs
     if (
-      /^(images|uploads)\/[a-zA-Z0-9._-]+\.(jpg|jpeg|png|webp)$/i.test(trimmed) &&
-      !trimmed.includes('..')
+      (/^(images|uploads)\/[a-zA-Z0-9._-]+\.(jpg|jpeg|png|webp)$/i.test(trimmed) && !trimmed.includes('..')) ||
+      /^https:\/\/res\.cloudinary\.com\/[a-zA-Z0-9._/-]+\.(jpg|jpeg|png|webp)$/i.test(trimmed)
     ) {
       return trimmed;
     }
@@ -478,10 +826,36 @@ function saveValidatedImageToDisk(imageInput, defaultFallback = '') {
     throw createValidationError('File content does not match a valid JPG, JPEG, PNG, or WEBP image.');
   }
 
-  const randomFileName = `${crypto.randomBytes(16).toString('hex')}.${detected.ext}`;
-  const filePath = path.join(UPLOADS_DIR, randomFileName);
-  fs.writeFileSync(filePath, buffer);
-  return `uploads/${randomFileName}`;
+  const randomPublicId = `swh_${crypto.randomBytes(16).toString('hex')}`;
+  const dataUri = `data:${detected.mime};base64,${buffer.toString('base64')}`;
+
+  try {
+    const uploadResult = await cloudinary.uploader.upload(dataUri, {
+      folder: 'successful_wellness_herbs',
+      public_id: randomPublicId,
+      resource_type: 'image',
+      overwrite: false
+    });
+    return uploadResult.secure_url;
+  } catch (cloudErr) {
+    console.warn('[Cloudinary] Upload failed (' + (cloudErr.message || 'error') + '). Falling back to local uploads/ folder.');
+    const fileName = `${randomPublicId}.${detected.ext}`;
+    fs.writeFileSync(path.join(UPLOADS_DIR, fileName), buffer);
+    return `uploads/${fileName}`;
+  }
+}
+
+async function deleteCloudinaryImageIfApplicable(imageUrl) {
+  if (!imageUrl || typeof imageUrl !== 'string') return;
+  if (!imageUrl.startsWith('https://res.cloudinary.com/')) return;
+  try {
+    const match = imageUrl.match(/\/image\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+$/);
+    if (match && match[1]) {
+      await cloudinary.uploader.destroy(match[1], { resource_type: 'image', invalidate: true });
+    }
+  } catch (err) {
+    console.error('Failed to delete Cloudinary image:', err.message);
+  }
 }
 
 function getBearerToken(req) {
@@ -492,20 +866,28 @@ function getBearerToken(req) {
   return '';
 }
 
-function isAdminAuthenticated(req) {
+async function isAdminAuthenticated(req) {
   const token = getBearerToken(req);
   if (!token) return false;
   const now = Date.now();
-  const session = db.prepare('SELECT token FROM admin_sessions WHERE token = ? AND expiresAt > ?').get(token, now);
-  return Boolean(session);
+  const res = await db.execute({
+    sql: 'SELECT token FROM admin_sessions WHERE token = ? AND expiresAt > ?',
+    args: [token, now]
+  });
+  return res.rows.length > 0;
 }
 
-function requireAdminAuth(req, res, next) {
-  if (!isAdminAuthenticated(req)) {
-    return res.status(401).json({ error: 'Unauthorized: Valid Admin session token required.' });
+async function requireAdminAuth(req, res, next) {
+  try {
+    const authed = await isAdminAuthenticated(req);
+    if (!authed) {
+      return res.status(401).json({ error: 'Unauthorized: Valid Admin session token required.' });
+    }
+    if (typeof next === 'function') return next();
+    return true;
+  } catch (err) {
+    return next(err);
   }
-  if (typeof next === 'function') return next();
-  return true;
 }
 
 function formatProductRow(row) {
@@ -616,80 +998,119 @@ const loginRateLimiter = rateLimit({
 });
 
 // ================= ADMIN AUTHENTICATION & PIN ROUTES =================
-app.post('/api/admin/login', loginRateLimiter, (req, res) => {
-  const enteredPin = String(req.body?.pin || '').trim();
-  if (!enteredPin) {
-    return res.status(400).json({ error: 'PIN is required.' });
-  }
+app.post('/api/admin/login', loginRateLimiter, async (req, res, next) => {
+  try {
+    const enteredPin = String(req.body?.pin || '').trim();
+    if (!enteredPin) {
+      return res.status(400).json({ error: 'PIN is required.' });
+    }
 
-  const row = db.prepare("SELECT value FROM admin_config WHERE key = 'admin_pin_hash'").get();
-  if (!row || !row.value) {
-    return res.status(503).json({
-      error: 'Admin PIN is not configured on the server. Set ADMIN_INITIAL_PIN (at least 6 characters) in .env and restart.'
+    const pinRes = await db.execute("SELECT value FROM admin_config WHERE key = 'admin_pin_hash'");
+    const row = pinRes.rows[0];
+    if (!row || !row.value) {
+      return res.status(503).json({
+        error: 'Admin PIN is not configured on the server. Set ADMIN_INITIAL_PIN (at least 6 characters) in .env and restart.'
+      });
+    }
+
+    const isValid = bcrypt.compareSync(enteredPin, String(row.value));
+    if (!isValid) {
+      return res.status(401).json({ error: 'Incorrect Admin PIN.' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const now = Date.now();
+    const expiresAt = now + 24 * 60 * 60 * 1000; // 24 hours
+    await db.execute({
+      sql: 'INSERT INTO admin_sessions (token, createdAt, expiresAt) VALUES (?, ?, ?)',
+      args: [token, now, expiresAt]
     });
+
+    return res.status(200).json({ token, expiresAt });
+  } catch (err) {
+    next(err);
   }
-
-  const isValid = bcrypt.compareSync(enteredPin, row.value);
-  if (!isValid) {
-    return res.status(401).json({ error: 'Incorrect Admin PIN.' });
-  }
-
-  const token = crypto.randomBytes(32).toString('hex');
-  const now = Date.now();
-  const expiresAt = now + 24 * 60 * 60 * 1000; // 24 hours
-  db.prepare('INSERT INTO admin_sessions (token, createdAt, expiresAt) VALUES (?, ?, ?)').run(token, now, expiresAt);
-
-  return res.status(200).json({ token, expiresAt });
 });
 
-app.post('/api/admin/logout', (req, res) => {
-  const token = getBearerToken(req);
-  if (token) {
-    db.prepare('DELETE FROM admin_sessions WHERE token = ?').run(token);
+app.post('/api/admin/logout', async (req, res, next) => {
+  try {
+    const token = getBearerToken(req);
+    if (token) {
+      await db.execute({
+        sql: 'DELETE FROM admin_sessions WHERE token = ?',
+        args: [token]
+      });
+    }
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    next(err);
   }
-  return res.status(200).json({ success: true });
 });
 
-app.get('/api/admin/session', (req, res) => {
-  return res.status(200).json({ authenticated: isAdminAuthenticated(req) });
+app.get('/api/admin/session', async (req, res, next) => {
+  try {
+    const authenticated = await isAdminAuthenticated(req);
+    return res.status(200).json({ authenticated });
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.put('/api/admin/pin', requireAdminAuth, (req, res) => {
-  const newPin = String(req.body?.newPin || '').trim();
-  if (newPin.length < 6) {
-    return res.status(400).json({ error: 'New PIN must be at least 6 characters.' });
-  }
+app.put('/api/admin/pin', requireAdminAuth, async (req, res, next) => {
+  try {
+    const newPin = String(req.body?.newPin || '').trim();
+    if (newPin.length < 6) {
+      return res.status(400).json({ error: 'New PIN must be at least 6 characters.' });
+    }
 
-  const newHash = bcrypt.hashSync(newPin, 10);
-  db.prepare("INSERT OR REPLACE INTO admin_config (key, value) VALUES ('admin_pin_hash', ?)").run(newHash);
-  return res.status(200).json({ success: true });
+    const newHash = bcrypt.hashSync(newPin, 10);
+    await db.execute({
+      sql: "INSERT OR REPLACE INTO admin_config (key, value) VALUES ('admin_pin_hash', ?)",
+      args: [newHash]
+    });
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ================= ADMIN-ONLY DATABASE EXPORT ROUTE =================
-app.get('/api/admin/export', requireAdminAuth, (req, res) => {
-  const productRows = db.prepare('SELECT * FROM products ORDER BY createdAt DESC').all();
-  const categoryRows = db.prepare('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC').all();
-  const reviewRows = db.prepare('SELECT * FROM reviews ORDER BY createdAt DESC').all();
+app.get('/api/admin/export', requireAdminAuth, async (req, res, next) => {
+  try {
+    const [productRes, categoryRes, reviewRes] = await Promise.all([
+      db.execute('SELECT * FROM products ORDER BY createdAt DESC'),
+      db.execute('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC'),
+      db.execute('SELECT * FROM reviews ORDER BY createdAt DESC')
+    ]);
 
-  return res.status(200).json({
-    exportedAt: new Date().toISOString(),
-    categories: categoryRows.map(c => c.name),
-    products: productRows.map(formatProductRow),
-    reviews: reviewRows.map(formatReviewRow)
-  });
+    return res.status(200).json({
+      exportedAt: new Date().toISOString(),
+      categories: categoryRes.rows.map(c => c.name),
+      products: productRes.rows.map(formatProductRow),
+      reviews: reviewRes.rows.map(formatReviewRow)
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ================= PRODUCTS & CATEGORIES ROUTES =================
-app.get('/api/products', (req, res) => {
-  const productRows = db.prepare('SELECT * FROM products ORDER BY createdAt DESC').all();
-  const categoryRows = db.prepare('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC').all();
-  return res.status(200).json({
-    items: productRows.map(formatProductRow),
-    categories: categoryRows.map(c => c.name)
-  });
+app.get('/api/products', async (req, res, next) => {
+  try {
+    const [productRes, categoryRes] = await Promise.all([
+      db.execute('SELECT * FROM products ORDER BY createdAt DESC'),
+      db.execute('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC')
+    ]);
+    return res.status(200).json({
+      items: productRes.rows.map(formatProductRow),
+      categories: categoryRes.rows.map(c => c.name)
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.post('/api/products', requireAdminAuth, (req, res) => {
+app.post('/api/products', requireAdminAuth, async (req, res, next) => {
   try {
     const body = req.body || {};
     const id = 'prod_' + Date.now() + '_' + crypto.randomBytes(4).toString('hex');
@@ -700,7 +1121,7 @@ app.post('/api/products', requireAdminAuth, (req, res) => {
     const category = String(body.category || 'General Health').trim().slice(0, 80);
     const price = Number(body.price) || 0;
     const oldPrice = Number(body.oldPrice) || 0;
-    const image = saveValidatedImageToDisk(body.image, 'images/product-herbal-mixture.jpg');
+    const image = await uploadValidatedImageToCloudinary(body.image, 'images/product-herbal-mixture.jpg');
     const featured = body.featured ? 1 : 0;
     const inStock = body.inStock !== false ? 1 : 0;
     const shortDesc = String(body.shortDesc || '').trim().slice(0, 300);
@@ -712,40 +1133,57 @@ app.post('/api/products', requireAdminAuth, (req, res) => {
     const usage = String(body.usage || 'Take as directed by herbalist.').trim().slice(0, 500);
     const createdAt = Date.now();
 
-    db.prepare('INSERT OR IGNORE INTO categories (name, sortOrder) VALUES (?, 99)').run(category);
-    db.prepare(`
-      INSERT INTO products (
+    await db.execute({
+      sql: 'INSERT OR IGNORE INTO categories (name, sortOrder) VALUES (?, 99)',
+      args: [category]
+    });
+    await db.execute({
+      sql: `INSERT INTO products (
         id, name, category, price, oldPrice, rating, reviewCount,
         image, featured, inStock, shortDesc, description, benefits, ingredients, usage, createdAt
-      ) VALUES (?, ?, ?, ?, ?, 5.0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      id, name, category, price, oldPrice, image, featured, inStock,
-      shortDesc, description, JSON.stringify(benefitsArr), ingredients, usage, createdAt
-    );
+      ) VALUES (?, ?, ?, ?, ?, 5.0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        id, name, category, price, oldPrice, image, featured, inStock,
+        shortDesc, description, JSON.stringify(benefitsArr), ingredients, usage, createdAt
+      ]
+    });
 
-    const inserted = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
-    return res.status(201).json({ item: formatProductRow(inserted) });
+    const insertedRes = await db.execute({
+      sql: 'SELECT * FROM products WHERE id = ?',
+      args: [id]
+    });
+    return res.status(201).json({ item: formatProductRow(insertedRes.rows[0]) });
   } catch (err) {
     if (err.statusCode) return res.status(err.statusCode).json({ error: err.message });
-    throw err;
+    next(err);
   }
 });
 
-app.post('/api/products/reset', requireAdminAuth, (req, res) => {
-  seedCategoriesIfNeeded(true);
-  seedProductsIfNeeded(true);
-  const productRows = db.prepare('SELECT * FROM products ORDER BY createdAt DESC').all();
-  const categoryRows = db.prepare('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC').all();
-  return res.status(200).json({
-    items: productRows.map(formatProductRow),
-    categories: categoryRows.map(c => c.name)
-  });
+app.post('/api/products/reset', requireAdminAuth, async (req, res, next) => {
+  try {
+    await seedCategoriesIfNeeded(true);
+    await seedProductsIfNeeded(true);
+    const [productRes, categoryRes] = await Promise.all([
+      db.execute('SELECT * FROM products ORDER BY createdAt DESC'),
+      db.execute('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC')
+    ]);
+    return res.status(200).json({
+      items: productRes.rows.map(formatProductRow),
+      categories: categoryRes.rows.map(c => c.name)
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.put('/api/products/:id', requireAdminAuth, (req, res) => {
+app.put('/api/products/:id', requireAdminAuth, async (req, res, next) => {
   try {
     const id = req.params.id;
-    const existing = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
+    const existingRes = await db.execute({
+      sql: 'SELECT * FROM products WHERE id = ?',
+      args: [id]
+    });
+    const existing = existingRes.rows[0];
     if (!existing) return res.status(404).json({ error: 'Product not found' });
 
     const body = req.body || {};
@@ -754,7 +1192,15 @@ app.put('/api/products/:id', requireAdminAuth, (req, res) => {
     const category = body.category !== undefined ? String(body.category).trim().slice(0, 80) : existing.category;
     const price = body.price !== undefined ? Number(body.price) : existing.price;
     const oldPrice = body.oldPrice !== undefined ? Number(body.oldPrice) : existing.oldPrice;
-    const image = body.image ? saveValidatedImageToDisk(body.image, existing.image) : existing.image;
+
+    let image = existing.image;
+    if (body.image && body.image !== existing.image) {
+      image = await uploadValidatedImageToCloudinary(body.image, existing.image);
+      if (existing.image && existing.image !== image) {
+        await deleteCloudinaryImageIfApplicable(existing.image);
+      }
+    }
+
     const featured = body.featured !== undefined ? (body.featured ? 1 : 0) : existing.featured;
     const inStock = body.inStock !== undefined ? (body.inStock ? 1 : 0) : existing.inStock;
     const shortDesc = body.shortDesc !== undefined ? String(body.shortDesc).trim().slice(0, 300) : existing.shortDesc;
@@ -767,122 +1213,169 @@ app.put('/api/products/:id', requireAdminAuth, (req, res) => {
     const ingredients = body.ingredients !== undefined ? String(body.ingredients).trim().slice(0, 500) : existing.ingredients;
     const usage = body.usage !== undefined ? String(body.usage).trim().slice(0, 500) : existing.usage;
 
-    db.prepare('INSERT OR IGNORE INTO categories (name, sortOrder) VALUES (?, 99)').run(category);
-    db.prepare(`
-      UPDATE products
-      SET name = ?, category = ?, price = ?, oldPrice = ?, image = ?,
-          featured = ?, inStock = ?, shortDesc = ?, description = ?,
-          benefits = ?, ingredients = ?, usage = ?
-      WHERE id = ?
-    `).run(
-      name, category, price, oldPrice, image,
-      featured, inStock, shortDesc, description,
-      JSON.stringify(benefitsArr), ingredients, usage, id
-    );
+    await db.execute({
+      sql: 'INSERT OR IGNORE INTO categories (name, sortOrder) VALUES (?, 99)',
+      args: [category]
+    });
+    await db.execute({
+      sql: `UPDATE products
+            SET name = ?, category = ?, price = ?, oldPrice = ?, image = ?,
+                featured = ?, inStock = ?, shortDesc = ?, description = ?,
+                benefits = ?, ingredients = ?, usage = ?
+            WHERE id = ?`,
+      args: [
+        name, category, price, oldPrice, image,
+        featured, inStock, shortDesc, description,
+        JSON.stringify(benefitsArr), ingredients, usage, id
+      ]
+    });
 
-    const updated = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
-    return res.status(200).json({ item: formatProductRow(updated) });
+    const updatedRes = await db.execute({
+      sql: 'SELECT * FROM products WHERE id = ?',
+      args: [id]
+    });
+    return res.status(200).json({ item: formatProductRow(updatedRes.rows[0]) });
   } catch (err) {
     if (err.statusCode) return res.status(err.statusCode).json({ error: err.message });
-    throw err;
+    next(err);
   }
 });
 
-app.delete('/api/products/:id', requireAdminAuth, (req, res) => {
-  const id = req.params.id;
-  const existing = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
-  if (existing && existing.image && existing.image.startsWith('uploads/')) {
-    const fileName = path.basename(existing.image);
-    const diskPath = path.join(UPLOADS_DIR, fileName);
-    if (fs.existsSync(diskPath)) {
-      try { fs.unlinkSync(diskPath); } catch (_) {}
+app.delete('/api/products/:id', requireAdminAuth, async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const existingRes = await db.execute({
+      sql: 'SELECT * FROM products WHERE id = ?',
+      args: [id]
+    });
+    const existing = existingRes.rows[0];
+    if (existing && existing.image) {
+      await deleteCloudinaryImageIfApplicable(String(existing.image));
+      if (String(existing.image).startsWith('uploads/')) {
+        const fileName = path.basename(String(existing.image));
+        const diskPath = path.join(UPLOADS_DIR, fileName);
+        if (fs.existsSync(diskPath)) {
+          try { fs.unlinkSync(diskPath); } catch (_) {}
+        }
+      }
     }
+    await db.execute({
+      sql: 'DELETE FROM products WHERE id = ?',
+      args: [id]
+    });
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    next(err);
   }
-  db.prepare('DELETE FROM products WHERE id = ?').run(id);
-  return res.status(200).json({ success: true });
 });
 
-app.get('/api/categories', (req, res) => {
-  const rows = db.prepare('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC').all();
-  return res.status(200).json({ items: rows.map(r => r.name) });
-});
-
-app.post('/api/categories', requireAdminAuth, (req, res) => {
-  const name = String(req.body?.name || '').trim().slice(0, 80);
-  if (!name) return res.status(400).json({ error: 'Category name is required' });
-  db.prepare('INSERT OR IGNORE INTO categories (name, sortOrder) VALUES (?, 99)').run(name);
-  const rows = db.prepare('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC').all();
-  return res.status(201).json({ name, items: rows.map(r => r.name) });
-});
-
-app.delete('/api/categories/:name', requireAdminAuth, (req, res) => {
-  const name = String(req.params.name || '').trim();
-  db.prepare('DELETE FROM categories WHERE name = ?').run(name);
-  const remaining = db.prepare('SELECT COUNT(*) as cnt FROM categories').get();
-  if (!remaining || remaining.cnt === 0) {
-    db.prepare("INSERT INTO categories (name, sortOrder) VALUES ('General Health', 0)").run();
+app.get('/api/categories', async (req, res, next) => {
+  try {
+    const rowsRes = await db.execute('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC');
+    return res.status(200).json({ items: rowsRes.rows.map(r => r.name) });
+  } catch (err) {
+    next(err);
   }
-  const rows = db.prepare('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC').all();
-  return res.status(200).json({ items: rows.map(r => r.name) });
+});
+
+app.post('/api/categories', requireAdminAuth, async (req, res, next) => {
+  try {
+    const name = String(req.body?.name || '').trim().slice(0, 80);
+    if (!name) return res.status(400).json({ error: 'Category name is required' });
+    await db.execute({
+      sql: 'INSERT OR IGNORE INTO categories (name, sortOrder) VALUES (?, 99)',
+      args: [name]
+    });
+    const rowsRes = await db.execute('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC');
+    return res.status(201).json({ name, items: rowsRes.rows.map(r => r.name) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.delete('/api/categories/:name', requireAdminAuth, async (req, res, next) => {
+  try {
+    const name = String(req.params.name || '').trim();
+    await db.execute({
+      sql: 'DELETE FROM categories WHERE name = ?',
+      args: [name]
+    });
+    const remainingRes = await db.execute('SELECT COUNT(*) as cnt FROM categories');
+    const cnt = Number(remainingRes.rows[0]?.cnt || 0);
+    if (cnt === 0) {
+      await db.execute("INSERT INTO categories (name, sortOrder) VALUES ('General Health', 0)");
+    }
+    const rowsRes = await db.execute('SELECT name FROM categories ORDER BY sortOrder ASC, name ASC');
+    return res.status(200).json({ items: rowsRes.rows.map(r => r.name) });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ================= REVIEWS ROUTES =================
 // Public: Read approved reviews only (reading hidden reviews requires admin token)
-app.get('/api/reviews', (req, res) => {
-  const filter = req.query.filter || 'all';
-  const wantsHidden = req.query.includeHidden === '1';
-  const includeHidden = wantsHidden && isAdminAuthenticated(req);
-  const limit = Math.min(Math.max(parseInt(req.query.limit || '9', 10) || 9, 1), 100);
-  const offset = Math.max(parseInt(req.query.offset || '0', 10) || 0, 0);
+app.get('/api/reviews', async (req, res, next) => {
+  try {
+    const filter = req.query.filter || 'all';
+    const wantsHidden = req.query.includeHidden === '1';
+    const includeHidden = wantsHidden && (await isAdminAuthenticated(req));
+    const limit = Math.min(Math.max(parseInt(req.query.limit || '9', 10) || 9, 1), 100);
+    const offset = Math.max(parseInt(req.query.offset || '0', 10) || 0, 0);
 
-  const conditions = [];
-  const params = [];
+    const conditions = [];
+    const args = [];
 
-  if (!includeHidden) {
-    conditions.push('isApproved = 1');
-  }
-  if (filter === 'photos') {
-    conditions.push('hasPhoto = 1');
-  } else if (filter === 'five_star') {
-    conditions.push('rating = 5');
-  }
-
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-
-  const totalFilteredRow = db.prepare(`SELECT COUNT(*) as cnt FROM reviews ${whereClause}`).get(...params);
-  const rows = db.prepare(`
-    SELECT * FROM reviews
-    ${whereClause}
-    ORDER BY createdAt DESC
-    LIMIT ? OFFSET ?
-  `).all(...params, limit, offset);
-
-  const statsRow = db.prepare(`
-    SELECT
-      COUNT(*) as totalAll,
-      SUM(CASE WHEN isApproved = 1 THEN 1 ELSE 0 END) as totalApproved,
-      SUM(CASE WHEN hasPhoto = 1 AND isApproved = 1 THEN 1 ELSE 0 END) as totalPhotos,
-      ROUND(AVG(CASE WHEN isApproved = 1 THEN rating ELSE NULL END), 1) as avgRating
-    FROM reviews
-  `).get();
-
-  const totalFiltered = totalFilteredRow ? Number(totalFilteredRow.cnt) : 0;
-
-  return res.status(200).json({
-    items: rows.map(formatReviewRow),
-    totalFiltered,
-    hasMore: offset + rows.length < totalFiltered,
-    stats: {
-      totalAll: includeHidden ? Number(statsRow?.totalAll || 0) : Number(statsRow?.totalApproved || 0),
-      totalApproved: Number(statsRow?.totalApproved || 0),
-      totalPhotos: Number(statsRow?.totalPhotos || 0),
-      avgRating: Number(statsRow?.avgRating || 5.0)
+    if (!includeHidden) {
+      conditions.push('isApproved = 1');
     }
-  });
+    if (filter === 'photos') {
+      conditions.push('hasPhoto = 1');
+    } else if (filter === 'five_star') {
+      conditions.push('rating = 5');
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const [totalFilteredRes, rowsRes, statsRes] = await Promise.all([
+      db.execute({
+        sql: `SELECT COUNT(*) as cnt FROM reviews ${whereClause}`,
+        args
+      }),
+      db.execute({
+        sql: `SELECT * FROM reviews ${whereClause} ORDER BY createdAt DESC LIMIT ? OFFSET ?`,
+        args: [...args, limit, offset]
+      }),
+      db.execute(`
+        SELECT
+          COUNT(*) as totalAll,
+          SUM(CASE WHEN isApproved = 1 THEN 1 ELSE 0 END) as totalApproved,
+          SUM(CASE WHEN hasPhoto = 1 AND isApproved = 1 THEN 1 ELSE 0 END) as totalPhotos,
+          ROUND(AVG(CASE WHEN isApproved = 1 THEN rating ELSE NULL END), 1) as avgRating
+        FROM reviews
+      `)
+    ]);
+
+    const totalFiltered = Number(totalFilteredRes.rows[0]?.cnt || 0);
+    const statsRow = statsRes.rows[0] || {};
+
+    return res.status(200).json({
+      items: rowsRes.rows.map(formatReviewRow),
+      totalFiltered,
+      hasMore: offset + rowsRes.rows.length < totalFiltered,
+      stats: {
+        totalAll: includeHidden ? Number(statsRow.totalAll || 0) : Number(statsRow.totalApproved || 0),
+        totalApproved: Number(statsRow.totalApproved || 0),
+        totalPhotos: Number(statsRow.totalPhotos || 0),
+        avgRating: Number(statsRow.avgRating || 5.0)
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
-// Public: Submit a review (with input validation, length limits, and safe image validation)
-app.post('/api/reviews', (req, res) => {
+// Public: Submit a review (with input validation, length limits, and safe Cloudinary image upload)
+app.post('/api/reviews', async (req, res, next) => {
   try {
     const body = req.body || {};
     const rawAuthor = String(body.author || 'Anonymous Customer').trim();
@@ -912,72 +1405,122 @@ app.post('/api/reviews', (req, res) => {
 
     const id = 'rev_' + Date.now() + '_' + crypto.randomBytes(4).toString('hex');
     const date = new Date().toISOString().split('T')[0];
-    const savedPhotoUrl = body.photoUrl ? saveValidatedImageToDisk(body.photoUrl, '') : '';
+    const savedPhotoUrl = body.photoUrl ? await uploadValidatedImageToCloudinary(body.photoUrl, '') : '';
     const hasPhoto = savedPhotoUrl ? 1 : 0;
 
-    const isAdmin = isAdminAuthenticated(req);
+    const isAdmin = await isAdminAuthenticated(req);
     const isApproved = isAdmin && body.isApproved !== undefined ? (body.isApproved ? 1 : 0) : 1;
     const isFeatured = isAdmin && body.isFeatured !== undefined ? (body.isFeatured ? 1 : 0) : 0;
     const createdAt = Date.now();
 
-    db.prepare(`
-      INSERT INTO reviews (id, author, location, rating, date, productName, text, photoUrl, hasPhoto, isApproved, isFeatured, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, rawAuthor, rawLocation, ratingNum, date, rawProductName, rawText, savedPhotoUrl, hasPhoto, isApproved, isFeatured, createdAt);
+    await db.execute({
+      sql: `INSERT INTO reviews (id, author, location, rating, date, productName, text, photoUrl, hasPhoto, isApproved, isFeatured, createdAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [id, rawAuthor, rawLocation, ratingNum, date, rawProductName, rawText, savedPhotoUrl, hasPhoto, isApproved, isFeatured, createdAt]
+    });
 
-    const inserted = db.prepare('SELECT * FROM reviews WHERE id = ?').get(id);
-    return res.status(201).json({ item: formatReviewRow(inserted) });
+    const insertedRes = await db.execute({
+      sql: 'SELECT * FROM reviews WHERE id = ?',
+      args: [id]
+    });
+    return res.status(201).json({ item: formatReviewRow(insertedRes.rows[0]) });
   } catch (err) {
     if (err.statusCode) return res.status(err.statusCode).json({ error: err.message });
-    throw err;
+    next(err);
   }
 });
 
 // Admin-Only: Reset reviews to default
-app.post('/api/reviews/reset', requireAdminAuth, (req, res) => {
-  seedReviewsIfNeeded(true);
-  return res.status(200).json({ success: true });
+app.post('/api/reviews/reset', requireAdminAuth, async (req, res, next) => {
+  try {
+    await seedReviewsIfNeeded(true);
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Admin-Only: Approve / hide a review
-app.patch('/api/reviews/:id', requireAdminAuth, (req, res) => {
-  const id = req.params.id;
-  const existing = db.prepare('SELECT * FROM reviews WHERE id = ?').get(id);
-  if (!existing) return res.status(404).json({ error: 'Review not found' });
+app.patch('/api/reviews/:id', requireAdminAuth, async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const existingRes = await db.execute({
+      sql: 'SELECT * FROM reviews WHERE id = ?',
+      args: [id]
+    });
+    const existing = existingRes.rows[0];
+    if (!existing) return res.status(404).json({ error: 'Review not found' });
 
-  const newStatus = existing.isApproved ? 0 : 1;
-  db.prepare('UPDATE reviews SET isApproved = ? WHERE id = ?').run(newStatus, id);
-  const updated = db.prepare('SELECT * FROM reviews WHERE id = ?').get(id);
-  return res.status(200).json({ item: formatReviewRow(updated) });
+    const newStatus = existing.isApproved ? 0 : 1;
+    await db.execute({
+      sql: 'UPDATE reviews SET isApproved = ? WHERE id = ?',
+      args: [newStatus, id]
+    });
+    const updatedRes = await db.execute({
+      sql: 'SELECT * FROM reviews WHERE id = ?',
+      args: [id]
+    });
+    return res.status(200).json({ item: formatReviewRow(updatedRes.rows[0]) });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Admin-Only: Edit a review
-app.put('/api/reviews/:id', requireAdminAuth, (req, res) => {
-  const id = req.params.id;
-  const existing = db.prepare('SELECT * FROM reviews WHERE id = ?').get(id);
-  if (!existing) return res.status(404).json({ error: 'Review not found' });
+app.put('/api/reviews/:id', requireAdminAuth, async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const existingRes = await db.execute({
+      sql: 'SELECT * FROM reviews WHERE id = ?',
+      args: [id]
+    });
+    const existing = existingRes.rows[0];
+    if (!existing) return res.status(404).json({ error: 'Review not found' });
 
-  const body = req.body || {};
-  const text = body.text !== undefined ? String(body.text).trim().slice(0, 1000) : existing.text;
-  const isApproved = body.isApproved !== undefined ? (body.isApproved ? 1 : 0) : existing.isApproved;
-  db.prepare('UPDATE reviews SET text = ?, isApproved = ? WHERE id = ?').run(text, isApproved, id);
-  const updated = db.prepare('SELECT * FROM reviews WHERE id = ?').get(id);
-  return res.status(200).json({ item: formatReviewRow(updated) });
+    const body = req.body || {};
+    const text = body.text !== undefined ? String(body.text).trim().slice(0, 1000) : existing.text;
+    const isApproved = body.isApproved !== undefined ? (body.isApproved ? 1 : 0) : existing.isApproved;
+    await db.execute({
+      sql: 'UPDATE reviews SET text = ?, isApproved = ? WHERE id = ?',
+      args: [text, isApproved, id]
+    });
+    const updatedRes = await db.execute({
+      sql: 'SELECT * FROM reviews WHERE id = ?',
+      args: [id]
+    });
+    return res.status(200).json({ item: formatReviewRow(updatedRes.rows[0]) });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Admin-Only: Delete a review
-app.delete('/api/reviews/:id', requireAdminAuth, (req, res) => {
-  const id = req.params.id;
-  const existing = db.prepare('SELECT * FROM reviews WHERE id = ?').get(id);
-  if (existing && existing.photoUrl && existing.photoUrl.startsWith('uploads/')) {
-    const fileName = path.basename(existing.photoUrl);
-    const diskPath = path.join(UPLOADS_DIR, fileName);
-    if (fs.existsSync(diskPath)) {
-      try { fs.unlinkSync(diskPath); } catch (_) {}
+app.delete('/api/reviews/:id', requireAdminAuth, async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const existingRes = await db.execute({
+      sql: 'SELECT * FROM reviews WHERE id = ?',
+      args: [id]
+    });
+    const existing = existingRes.rows[0];
+    if (existing && existing.photoUrl) {
+      await deleteCloudinaryImageIfApplicable(String(existing.photoUrl));
+      if (String(existing.photoUrl).startsWith('uploads/')) {
+        const fileName = path.basename(String(existing.photoUrl));
+        const diskPath = path.join(UPLOADS_DIR, fileName);
+        if (fs.existsSync(diskPath)) {
+          try { fs.unlinkSync(diskPath); } catch (_) {}
+        }
+      }
     }
+    await db.execute({
+      sql: 'DELETE FROM reviews WHERE id = ?',
+      args: [id]
+    });
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    next(err);
   }
-  db.prepare('DELETE FROM reviews WHERE id = ?').run(id);
-  return res.status(200).json({ success: true });
 });
 
 // ================= STATIC FILE SERVER (AFTER 403 GUARD) =================
@@ -1017,6 +1560,22 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT} with SQLite database at ${path.join(DATA_DIR, 'herbal_store.db')}`);
-});
+async function startServer() {
+  try {
+    await createTablesIfNeeded();
+    await seedProductsIfNeeded(false);
+    await seedReviewsIfNeeded(false);
+    await seedAdminPinIfNeeded();
+    await cleanupExpiredSessions();
+    setInterval(cleanupExpiredSessions, 60 * 60 * 1000).unref();
+
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT} (connected to Turso & Cloudinary)`);
+    });
+  } catch (err) {
+    console.error('Failed to initialize database and start server:', err.message);
+    process.exit(1);
+  }
+}
+
+startServer();
