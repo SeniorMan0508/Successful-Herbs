@@ -551,6 +551,7 @@ function formatReviewRow(row) {
 
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
 
 // ================= 403 STATIC & SENSITIVE PATH GUARD (BEFORE express.static) =================
 app.use((req, res, next) => {
