@@ -238,6 +238,15 @@ const STORAGE_KEYS = {
 let _productsCache = [...DEFAULT_PRODUCTS];
 let _categoriesCache = [...DEFAULT_CATEGORIES];
 
+// Automatically route /api requests to http://localhost:3000 if opened via VS Code Live Server (e.g. port 5500) or file://
+const API_BASE =
+  window.location.protocol === "file:" ||
+  ((window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
+    window.location.port &&
+    window.location.port !== "3000")
+    ? "http://localhost:3000"
+    : "";
+
 // Storage & Server API Utilities
 const DataStore = {
   // Admin Auth Token Helper
@@ -263,7 +272,7 @@ const DataStore = {
   // Sync Products & Categories from Server Database (/api/products)
   async syncFromServer() {
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch(`${API_BASE}/api/products`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.items)) {
@@ -290,7 +299,7 @@ const DataStore = {
   async addCategoryAsync(name) {
     if (!name || !name.trim()) return null;
     const clean = name.trim();
-    const res = await fetch("/api/categories", {
+    const res = await fetch(`${API_BASE}/api/categories`, {
       method: "POST",
       headers: this.getAuthHeaders(),
       body: JSON.stringify({ name: clean })
@@ -309,7 +318,7 @@ const DataStore = {
 
   async deleteCategoryAsync(name) {
     if (!name) return false;
-    const res = await fetch(`/api/categories/${encodeURIComponent(name)}`, {
+    const res = await fetch(`${API_BASE}/api/categories/${encodeURIComponent(name)}`, {
       method: "DELETE",
       headers: this.getAuthHeaders()
     });
@@ -335,7 +344,7 @@ const DataStore = {
   },
 
   async addProductAsync(productData) {
-    const res = await fetch("/api/products", {
+    const res = await fetch(`${API_BASE}/api/products`, {
       method: "POST",
       headers: this.getAuthHeaders(),
       body: JSON.stringify(productData)
@@ -357,7 +366,7 @@ const DataStore = {
   },
 
   async updateProductAsync(id, updatedFields) {
-    const res = await fetch(`/api/products/${encodeURIComponent(id)}`, {
+    const res = await fetch(`${API_BASE}/api/products/${encodeURIComponent(id)}`, {
       method: "PUT",
       headers: this.getAuthHeaders(),
       body: JSON.stringify(updatedFields)
@@ -376,7 +385,7 @@ const DataStore = {
   },
 
   async deleteProductAsync(id) {
-    const res = await fetch(`/api/products/${encodeURIComponent(id)}`, {
+    const res = await fetch(`${API_BASE}/api/products/${encodeURIComponent(id)}`, {
       method: "DELETE",
       headers: this.getAuthHeaders()
     });
@@ -390,7 +399,7 @@ const DataStore = {
   },
 
   async resetProductsAsync() {
-    const res = await fetch("/api/products/reset", {
+    const res = await fetch(`${API_BASE}/api/products/reset`, {
       method: "POST",
       headers: this.getAuthHeaders()
     });
@@ -489,7 +498,7 @@ const DataStore = {
         offset: String(offset),
         includeHidden: includeHidden ? "1" : "0"
       });
-      const res = await fetch(`/api/reviews?${params.toString()}`, {
+      const res = await fetch(`${API_BASE}/api/reviews?${params.toString()}`, {
         headers: includeHidden ? this.getAuthHeaders() : {}
       });
       if (res.ok) {
@@ -545,7 +554,7 @@ const DataStore = {
   },
 
   async addReviewAsync(reviewData) {
-    const res = await fetch("/api/reviews", {
+    const res = await fetch(`${API_BASE}/api/reviews`, {
       method: "POST",
       headers: this.getAuthHeaders(),
       body: JSON.stringify(reviewData)
@@ -573,7 +582,7 @@ const DataStore = {
   },
 
   async toggleReviewApprovalAsync(id) {
-    const res = await fetch(`/api/reviews/${encodeURIComponent(id)}`, {
+    const res = await fetch(`${API_BASE}/api/reviews/${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: this.getAuthHeaders()
     });
@@ -594,7 +603,7 @@ const DataStore = {
   },
 
   async deleteReviewAsync(id) {
-    const res = await fetch(`/api/reviews/${encodeURIComponent(id)}`, {
+    const res = await fetch(`${API_BASE}/api/reviews/${encodeURIComponent(id)}`, {
       method: "DELETE",
       headers: this.getAuthHeaders()
     });
@@ -612,7 +621,7 @@ const DataStore = {
   },
 
   async resetReviewsAsync() {
-    const res = await fetch("/api/reviews/reset", {
+    const res = await fetch(`${API_BASE}/api/reviews/reset`, {
       method: "POST",
       headers: this.getAuthHeaders()
     });
@@ -736,13 +745,21 @@ Hello *Successful Wellness Herbs*, I would like to place and confirm this order 
 
   // Server-Side Admin Authentication & PIN Security (Bcrypt Hashed + Token Protected)
   async loginAdminAsync(enteredPin) {
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pin: (enteredPin || "").trim() })
-    });
+    let res;
+    try {
+      res = await fetch(`${API_BASE}/api/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: (enteredPin || "").trim() })
+      });
+    } catch (_) {
+      throw new Error("Cannot connect to server. Please make sure 'node server.js' is running.");
+    }
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
+      if (res.status === 404 || res.status === 405) {
+        throw new Error("Admin API not found on this port. Please open http://localhost:3000/admin.html");
+      }
       throw new Error(err.error || "Incorrect Admin PIN.");
     }
     const data = await res.json();
@@ -752,7 +769,7 @@ Hello *Successful Wellness Herbs*, I would like to place and confirm this order 
 
   async logoutAdminAsync() {
     try {
-      await fetch("/api/admin/logout", {
+      await fetch(`${API_BASE}/api/admin/logout`, {
         method: "POST",
         headers: this.getAuthHeaders()
       });
@@ -764,7 +781,7 @@ Hello *Successful Wellness Herbs*, I would like to place and confirm this order 
     const token = this.getAdminToken();
     if (!token) return false;
     try {
-      const res = await fetch("/api/admin/session", {
+      const res = await fetch(`${API_BASE}/api/admin/session`, {
         headers: this.getAuthHeaders()
       });
       if (res.ok) {
@@ -781,7 +798,7 @@ Hello *Successful Wellness Herbs*, I would like to place and confirm this order 
     if (cleanPin.length < 6) {
       throw new Error("PIN must be at least 6 characters.");
     }
-    const res = await fetch("/api/admin/pin", {
+    const res = await fetch(`${API_BASE}/api/admin/pin`, {
       method: "PUT",
       headers: this.getAuthHeaders(),
       body: JSON.stringify({ newPin: cleanPin })
@@ -794,7 +811,7 @@ Hello *Successful Wellness Herbs*, I would like to place and confirm this order 
   },
 
   async exportDatabaseBackupAsync() {
-    const res = await fetch("/api/admin/export", {
+    const res = await fetch(`${API_BASE}/api/admin/export`, {
       headers: this.getAuthHeaders()
     });
     if (!res.ok) {

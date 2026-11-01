@@ -981,9 +981,21 @@ app.use((req, res, next) => {
 // JSON body parser (5 MB max to accommodate 3 MB base64-encoded image payloads)
 app.use(express.json({ limit: '5mb' }));
 
-// Disable caching on API responses
+// Disable caching on API responses and allow local dev origins (e.g. VS Code Live Server)
 app.use('/api', (req, res, next) => {
   res.set('Cache-Control', 'no-store');
+  const origin = req.headers.origin || '';
+  if (
+    origin === 'null' ||
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)
+  ) {
+    res.set('Access-Control-Allow-Origin', origin);
+    res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  }
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
   next();
 });
 
