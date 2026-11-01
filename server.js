@@ -836,12 +836,14 @@ async function uploadValidatedImageToCloudinary(imageInput, defaultFallback = ''
       resource_type: 'image',
       overwrite: false
     });
+    if (!uploadResult || !uploadResult.secure_url) {
+      throw new Error('Cloudinary did not return a secure_url.');
+    }
     return uploadResult.secure_url;
   } catch (cloudErr) {
-    console.warn('[Cloudinary] Upload failed (' + (cloudErr.message || 'error') + '). Falling back to local uploads/ folder.');
-    const fileName = `${randomPublicId}.${detected.ext}`;
-    fs.writeFileSync(path.join(UPLOADS_DIR, fileName), buffer);
-    return `uploads/${fileName}`;
+    const err = new Error(`Cloudinary image upload failed: ${cloudErr.message || 'Check CLOUDINARY_URL configuration.'}`);
+    err.statusCode = 502;
+    throw err;
   }
 }
 
