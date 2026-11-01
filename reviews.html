@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Reviews & Proof | Successful Wellness Herbs</title>
+  <meta name="description" content="Read authentic customer reviews, testimonials, and photo results for Successful Wellness Herbs remedies. Share your own healing story with photo or text!">
+  <link rel="icon" type="image/jpeg" href="images/brand-logo.jpeg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .reviews-hero-banner {
+      background: linear-gradient(135deg, #0c331a 0%, #154c29 100%);
+      color: #ffffff;
+      padding: 64px 0;
+      text-align: center;
+    }
+    .satisfaction-stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+    .stat-pill {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 14px 28px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .stat-pill-num {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent-gold-light);
+    }
+    .stat-pill-label {
+      font-size: 0.88rem;
+      color: #d1e7d8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <aside class="top-bar" aria-label="Announcement & Contact Bar">
+    <div class="container">
+      <div class="top-bar-left">
+        <span class="top-bar-item">
+          <i class="fas fa-map-marker-alt"></i> Ojere via Moshood Abiola Poly, Pansheke, Abeokuta
+        </span>
+        <span class="top-bar-item">
+          <i class="fas fa-phone-alt"></i> 
+          <a href="tel:08148880378">0814 888 0378</a> &bull; <a href="tel:+2349028646068">+234 902 864 6068</a>
+        </span>
+      </div>
+      <div class="top-bar-right">
+        <span class="top-bar-item">
+          <i class="fas fa-envelope"></i> 
+          <a href="mailto:Successfulwellnessherbs@gmail.com">Successfulwellnessherbs@gmail.com</a>
+        </span>
+        <span class="top-bar-badge"><i class="fas fa-star"></i> 100% Real Customer Results</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Sticky Main Header -->
+  <header class="main-header">
+    <div class="container">
+      <div class="header-inner">
+        <!-- Brand Logo & Name -->
+        <a href="index.html" class="brand-logo-wrap">
+          <img src="images/brand-logo.jpeg" alt="Successful Wellness Herbs Logo" class="brand-logo-img">
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav>
+          <ul class="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="shop.html" class="nav-link">Shop Remedies</a></li>
+            <li><a href="reviews.html" class="nav-link active">Customer Reviews</a></li>
+            <li><a href="index.html#about" class="nav-link">About Us</a></li>
+            <li><a href="contact.html" class="nav-link">Contact & Consult</a></li>
+          </ul>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="header-actions">
+          <!-- Cart Trigger -->
+          <button class="cart-toggle-btn" aria-label="Open Shopping Cart">
+            <i class="fas fa-shopping-basket"></i>
+            <span class="cart-badge" style="display: none;">0</span>
+          </button>
+
+          <!-- Mobile Toggle -->
+          <button class="mobile-menu-btn" aria-label="Toggle navigation menu">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Reviews Hero Banner -->
+  <section class="reviews-hero-banner">
+    <div class="container">
+      <span class="section-tag" style="color: var(--accent-gold-light);">Real People &bull; Genuine Results</span>
+      <h1 class="section-title" style="color: #ffffff; margin-bottom: 12px;">Customer Reviews & Transformations</h1>
+      <p style="color: #d1e7d8; max-width: 680px; margin: 0 auto; font-size: 1.05rem;">
+        Discover how our traditional African herbal mixtures have helped individuals overcome chronic ailments, revitalize energy, and achieve lifelong natural wellness.
+      </p>
+
+      <div class="satisfaction-stats">
+        <div class="stat-pill">
+          <span class="stat-pill-num">4.9/5</span>
+          <span class="stat-pill-label">Average Satisfaction Rating</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-pill-num">1,200+</span>
+          <span class="stat-pill-label">Patients & Clients Healed</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-pill-num">100%</span>
+          <span class="stat-pill-label">Natural Organic Ingredients</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Reviews Display & Filter -->
+  <main class="section">
+    <div class="container">
+      <!-- Filter Buttons -->
+      <div style="display: flex; justify-content: center; gap: 14px; margin-bottom: 40px; flex-wrap: wrap;">
+        <button class="btn btn-sm btn-primary review-filter-btn" data-filter="all" onclick="filterReviews('all')">
+          All Reviews
+        </button>
+        <button class="btn btn-sm btn-outline review-filter-btn" data-filter="photos" onclick="filterReviews('photos')">
+          <i class="fas fa-camera"></i> With Photo Proof
+        </button>
+        <button class="btn btn-sm btn-outline review-filter-btn" data-filter="five_star" onclick="filterReviews('five_star')">
+          <i class="fas fa-star"></i> 5-Star Reviews
+        </button>
+      </div>
+
+      <!-- Reviews Grid -->
+      <div class="reviews-grid" id="reviewsDisplayGrid">
+        <!-- Populated dynamically by reviews.js -->
+      </div>
+
+      <!-- Customer Review Submission Card -->
+      <div class="review-submit-card" style="margin-top: 64px;">
+        <h2 class="review-form-title">Leave Your Honest Review</h2>
+        <p class="review-form-subtitle">
+          Share your healing story! You can upload an authentic picture proof (bottle, results, delivery) or write an ordinary text review.
+        </p>
+
+        <form id="customerReviewForm">
+          <!-- Interactive Star Rating Picker -->
+          <div style="text-align: center; margin-bottom: 12px;">
+            <label class="form-label" style="display: block; margin-bottom: 6px;">Select Rating (1 to 5 Stars)</label>
+            <div class="rating-select-group" id="ratingStarPicker">
+              <i class="fas fa-star rating-star selected" data-val="1"></i>
+              <i class="fas fa-star rating-star selected" data-val="2"></i>
+              <i class="fas fa-star rating-star selected" data-val="3"></i>
+              <i class="fas fa-star rating-star selected" data-val="4"></i>
+              <i class="fas fa-star rating-star selected" data-val="5"></i>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="reviewAuthorName">Your Full Name *</label>
+              <input type="text" id="reviewAuthorName" class="form-control" placeholder="e.g. Adebayo Ogunlesi" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reviewLocation">Your City & State *</label>
+              <input type="text" id="reviewLocation" class="form-control" placeholder="e.g. Abeokuta, Ogun State" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reviewProductSelect">Remedy Used / Experience</label>
+            <select id="reviewProductSelect" class="form-control">
+              <!-- Populated by reviews.js -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reviewText">Your Experience & Feedback *</label>
+            <textarea id="reviewText" class="form-control" placeholder="Describe how the remedy helped your symptoms, how long you used it, and your overall recovery experience..." required></textarea>
+          </div>
+
+          <!-- Photo Upload (Optional) -->
+          <div class="form-group">
+            <label class="form-label">Upload Photo Proof (Optional - Picture or Ordinary Text)</label>
+            <div class="file-upload-box" onclick="document.getElementById('reviewPhotoInput').click()">
+              <div class="file-upload-icon"><i class="fas fa-camera"></i></div>
+              <div class="file-upload-text">Click to attach photo of your product or delivery proof (JPG/PNG)</div>
+              <input type="file" id="reviewPhotoInput" accept="image/*" style="display: none;">
+            </div>
+
+            <div class="file-preview-wrap" id="reviewPhotoPreviewWrap">
+              <img id="reviewPhotoPreview" src="" alt="Review preview">
+              <button type="button" class="btn-remove-preview" id="btnRemoveReviewPhoto" title="Remove photo">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 28px;">
+            <button type="submit" class="btn btn-primary" style="min-width: 260px;">
+              <i class="fas fa-paper-plane"></i> Publish Customer Review
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Slide-Over Shopping Cart Drawer -->
+  <div class="cart-drawer-overlay"></div>
+  <aside class="cart-drawer" aria-label="Shopping Cart Drawer">
+    <div class="cart-drawer-header">
+      <h3 class="cart-drawer-title">
+        <i class="fas fa-shopping-basket" style="color: var(--primary);"></i>
+        Your Herbal Basket
+      </h3>
+      <button class="btn-close-drawer" aria-label="Close cart"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="cart-drawer-body">
+      <!-- Items dynamically populated -->
+    </div>
+
+    <div class="cart-drawer-footer">
+      <div class="cart-summary-row">
+        <span>Total Amount:</span>
+        <span id="cartDrawerTotal" style="color: var(--primary);">₦0</span>
+      </div>
+
+      <div class="cart-checkout-box">
+        <div class="checkout-box-title">
+          <i class="fab fa-whatsapp" style="color: var(--whatsapp); font-size: 1.1rem;"></i>
+          Fast WhatsApp Checkout Info
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="text" id="checkoutCustName" class="form-control" placeholder="Your Full Name *" required style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="tel" id="checkoutCustPhone" class="form-control" placeholder="Phone Number (e.g. 0814...) *" required style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="text" id="checkoutCustAddress" class="form-control" placeholder="Delivery Street Address" style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="text" id="checkoutCustCityState" class="form-control" placeholder="City & State (e.g. Abeokuta, Ogun)" style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <input type="text" id="checkoutCustNotes" class="form-control" placeholder="Notes (e.g. Preferred delivery time)" style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+      </div>
+
+      <button id="btnWhatsAppCheckout" class="btn btn-whatsapp btn-whatsapp-checkout">
+        <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> Complete Order on WhatsApp
+      </button>
+    </div>
+  </aside>
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/2348148880378?text=Hello%20Successful%20Wellness%20Herbs%2C%20I%20would%20like%20to%20inquire%20about%20your%20remedies" target="_blank" class="floating-whatsapp" title="Chat with us on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+    <span>Order on WhatsApp</span>
+  </a>
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand Info -->
+        <div class="footer-brand">
+          <img src="images/brand-logo.jpeg" alt="Successful Wellness Herbs" class="brand-logo-img">
+          <h3 class="footer-brand-title">SUCCESSFUL WELLNESS HERBS</h3>
+          <div class="footer-tagline">Your Path To Natural Wellness</div>
+          <p class="footer-desc">
+            Empowering individuals with pure, time-honored traditional Nigerian herbal remedies. 
+            Crafted with sacred indigenous roots and uncompromising hygiene to restore whole-body wellness.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" class="footer-link"><i class="fas fa-angle-right"></i> Home</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-angle-right"></i> Shop Remedies</a></li>
+            <li><a href="reviews.html" class="footer-link"><i class="fas fa-angle-right"></i> Customer Reviews</a></li>
+            <li><a href="index.html#about" class="footer-link"><i class="fas fa-angle-right"></i> About Our Heritage</a></li>
+            <li><a href="contact.html" class="footer-link"><i class="fas fa-angle-right"></i> Contact & Consult</a></li>
+          </ul>
+        </div>
+
+        <!-- Popular Remedies -->
+        <div>
+          <h4 class="footer-heading">Herbal Solutions</h4>
+          <ul class="footer-links">
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Immunity & Vitality</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Pure Organic Detox</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Stamina & Energy</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Anti-Ulcer Gastric Brew</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Womb & Fertility Tonic</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact Details -->
+        <div>
+          <h4 class="footer-heading">Store Location & Contact</h4>
+          <div class="footer-contact-list">
+            <div class="footer-contact-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Ojere via Moshood ABIOLA polytechnic Pansheke Abeokuta Ogun state Nigeria</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-phone-alt"></i>
+              <span>0814 888 0378<br>+234 902 864 6068</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-envelope"></i>
+              <span>Successfulwellnessherbs@gmail.com</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-clock"></i>
+              <span>Mon - Sat: 8:00 AM - 7:00 PM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 <strong>SUCCESSFUL WELLNESS HERBS</strong>. All Rights Reserved.
+        </div>
+        <div>
+          <!-- Discreet Admin Portal Link -->
+          <a href="admin.html" class="footer-admin-link" title="Staff & Management Portal">
+            <i class="fas fa-lock"></i> Staff Portal
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/reviews.js"></script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact & Visit Us | Successful Wellness Herbs - Abeokuta</title>
+  <meta name="description" content="Get in touch with Successful Wellness Herbs in Ojere, Moshood Abiola Polytechnic, Pansheke, Abeokuta. Phone: 0814 888 0378, +234 902 864 6068. Free consultation on WhatsApp!">
+  <link rel="icon" type="image/jpeg" href="images/brand-logo.jpeg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .contact-hero-banner {
+      background: linear-gradient(135deg, #0c331a 0%, #154c29 100%);
+      color: #ffffff;
+      padding: 60px 0;
+      text-align: center;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 48px;
+      align-items: flex-start;
+    }
+    .contact-info-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .contact-info-box {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .contact-info-box:hover {
+      border-color: var(--primary-light);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .contact-box-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: var(--radius-full);
+      background: var(--primary-soft);
+      color: var(--primary-deep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .contact-box-title {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      color: var(--primary-deep);
+      margin-bottom: 4px;
+    }
+    .contact-form-box {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      box-shadow: var(--shadow-md);
+    }
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 48px;
+    }
+    .faq-item {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+    }
+    .faq-q {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      color: var(--primary-deep);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .faq-a {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+    @media (max-width: 900px) {
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <aside class="top-bar" aria-label="Announcement & Contact Bar">
+    <div class="container">
+      <div class="top-bar-left">
+        <span class="top-bar-item">
+          <i class="fas fa-map-marker-alt"></i> Ojere via Moshood Abiola Poly, Pansheke, Abeokuta
+        </span>
+        <span class="top-bar-item">
+          <i class="fas fa-phone-alt"></i> 
+          <a href="tel:08148880378">0814 888 0378</a> &bull; <a href="tel:+2349028646068">+234 902 864 6068</a>
+        </span>
+      </div>
+      <div class="top-bar-right">
+        <span class="top-bar-item">
+          <i class="fas fa-envelope"></i> 
+          <a href="mailto:Successfulwellnessherbs@gmail.com">Successfulwellnessherbs@gmail.com</a>
+        </span>
+        <span class="top-bar-badge"><i class="fas fa-comments"></i> WhatsApp Consultation Active</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Sticky Main Header -->
+  <header class="main-header">
+    <div class="container">
+      <div class="header-inner">
+        <!-- Brand Logo & Name -->
+        <a href="index.html" class="brand-logo-wrap">
+          <img src="images/brand-logo.jpeg" alt="Successful Wellness Herbs Logo" class="brand-logo-img">
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav>
+          <ul class="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="shop.html" class="nav-link">Shop Remedies</a></li>
+            <li><a href="reviews.html" class="nav-link">Customer Reviews</a></li>
+            <li><a href="index.html#about" class="nav-link">About Us</a></li>
+            <li><a href="contact.html" class="nav-link active">Contact & Consult</a></li>
+          </ul>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="header-actions">
+          <!-- Cart Trigger -->
+          <button class="cart-toggle-btn" aria-label="Open Shopping Cart">
+            <i class="fas fa-shopping-basket"></i>
+            <span class="cart-badge" style="display: none;">0</span>
+          </button>
+
+          <!-- Mobile Toggle -->
+          <button class="mobile-menu-btn" aria-label="Toggle navigation menu">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contact Hero Banner -->
+  <section class="contact-hero-banner">
+    <div class="container">
+      <span class="section-tag" style="color: var(--accent-gold-light);">Get In Touch</span>
+      <h1 class="section-title" style="color: #ffffff; margin-bottom: 12px;">Contact & Herbal Consultation</h1>
+      <p style="color: #d1e7d8; max-width: 650px; margin: 0 auto; font-size: 1.05rem;">
+        We are here to answer your questions, advise on appropriate herbal dosages, and ship your orders anywhere across Nigeria.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Contact Section -->
+  <main class="section">
+    <div class="container">
+      <div class="contact-grid">
+        <!-- Contact Information Cards -->
+        <div class="contact-info-cards">
+          <div class="contact-info-box">
+            <div class="contact-box-icon"><i class="fas fa-store"></i></div>
+            <div>
+              <h3 class="contact-box-title">Physical Store Location</h3>
+              <p style="font-size: 0.92rem; color: var(--text-muted); line-height: 1.6;">
+                <strong>Ojere via Moshood ABIOLA polytechnic Pansheke Abeokuta Ogun state Nigeria</strong>
+              </p>
+              <span style="font-size: 0.8rem; color: var(--primary); font-weight: 600; margin-top: 4px; display: block;">
+                Easily accessible from Pansheke & MAPOLY gate
+              </span>
+            </div>
+          </div>
+
+          <div class="contact-info-box">
+            <div class="contact-box-icon"><i class="fas fa-phone-alt"></i></div>
+            <div>
+              <h3 class="contact-box-title">Direct Phone Lines</h3>
+              <p style="font-size: 0.92rem; color: var(--text-muted); line-height: 1.6;">
+                <a href="tel:08148880378" style="font-weight: 700; color: var(--primary-deep);">0814 888 0378</a><br>
+                <a href="tel:+2349028646068" style="font-weight: 700; color: var(--primary-deep);">+234 902 864 6068</a>
+              </p>
+              <span style="font-size: 0.8rem; color: var(--text-light); margin-top: 4px; display: block;">
+                Lines open: Mon - Sat (8:00 AM - 7:00 PM)
+              </span>
+            </div>
+          </div>
+
+          <div class="contact-info-box">
+            <div class="contact-box-icon" style="background: rgba(37, 211, 102, 0.15); color: #128c7e;"><i class="fab fa-whatsapp"></i></div>
+            <div>
+              <h3 class="contact-box-title">Instant WhatsApp Line</h3>
+              <p style="font-size: 0.92rem; color: var(--text-muted); line-height: 1.6;">
+                Chat directly with our herbal consultants for personalized health plans.
+              </p>
+              <a href="https://wa.me/2348148880378?text=Hello%20Successful%20Wellness%20Herbs%2C%20I%20would%20like%20to%20consult%20regarding%20my%20health" target="_blank" class="btn btn-sm btn-whatsapp" style="margin-top: 8px;">
+                <i class="fab fa-whatsapp"></i> Chat Now (0814 888 0378)
+              </a>
+            </div>
+          </div>
+
+          <div class="contact-info-box">
+            <div class="contact-box-icon"><i class="fas fa-envelope"></i></div>
+            <div>
+              <h3 class="contact-box-title">Business Email</h3>
+              <p style="font-size: 0.92rem; color: var(--text-muted); line-height: 1.6;">
+                <a href="mailto:Successfulwellnessherbs@gmail.com" style="color: var(--primary-deep); font-weight: 600;">Successfulwellnessherbs@gmail.com</a>
+              </p>
+              <span style="font-size: 0.8rem; color: var(--text-light); margin-top: 4px; display: block;">
+                For corporate inquiries, bulk supplies & prescriptions
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Consultation & Contact Form -->
+        <div class="contact-form-box">
+          <h2 style="font-family: var(--font-heading); font-size: 1.8rem; color: var(--primary-deep); margin-bottom: 8px;">
+            Send An Inquiry / Request Consultation
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 24px;">
+            Fill in your details below. You can choose to dispatch your consultation directly to our WhatsApp or send a message.
+          </p>
+
+          <form id="contactInquiryForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="contactName">Your Full Name *</label>
+                <input type="text" id="contactName" class="form-control" placeholder="e.g. Oluwaseun Adeleke" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="contactPhone">Phone / WhatsApp Number *</label>
+                <input type="tel" id="contactPhone" class="form-control" placeholder="e.g. 0814..." required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="contactSubject">Health Concern / Inquiry Subject</label>
+              <select id="contactSubject" class="form-control">
+                <option value="Immunity & General Detox">Immunity & General Detox</option>
+                <option value="Vitality & Body Stamina">Vitality & Body Stamina</option>
+                <option value="Ulcer & Chronic Gastric Pain">Ulcer & Chronic Gastric Pain</option>
+                <option value="Womb Cleansing & Hormonal Balance">Womb Cleansing & Hormonal Balance</option>
+                <option value="Skin Rash, Eczema & Infection">Skin Rash, Eczema & Infection</option>
+                <option value="Bulk Order & Nationwide Delivery">Bulk Order & Nationwide Delivery</option>
+                <option value="Other Consultation">Other Personal Consultation</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="contactMessage">Describe Your Symptoms or Questions *</label>
+              <textarea id="contactMessage" class="form-control" style="min-height: 120px;" placeholder="Please explain how long you've experienced the symptoms, any past remedies used, and your current condition..." required></textarea>
+            </div>
+
+            <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 24px;">
+              <button type="button" id="btnSendViaWhatsApp" class="btn btn-whatsapp" style="flex: 1;">
+                <i class="fab fa-whatsapp"></i> Send Direct to WhatsApp
+              </button>
+              <button type="submit" class="btn btn-primary" style="flex: 1;">
+                <i class="fas fa-paper-plane"></i> Submit Inquiry
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- FAQ Section -->
+      <div style="margin-top: 72px;">
+        <div class="section-header" style="margin-bottom: 32px;">
+          <span class="section-tag">Frequently Asked Questions</span>
+          <h2 class="section-title">Common Questions & Guidance</h2>
+        </div>
+
+        <div class="faq-list">
+          <div class="faq-item">
+            <h3 class="faq-q"><i class="fas fa-circle-question" style="color: var(--primary);"></i> How do I take the herbal mixtures?</h3>
+            <p class="faq-a">Each bottle comes with detailed dosage guidelines. Typically, our liquid tonics are taken in small tot glasses (30ml - 50ml) morning before breakfast and evening after meals. Exact instructions are provided with your order.</p>
+          </div>
+          <div class="faq-item">
+            <h3 class="faq-q"><i class="fas fa-circle-question" style="color: var(--primary);"></i> How long does delivery take across Nigeria?</h3>
+            <p class="faq-a">Orders within Abeokuta are delivered same-day. Orders to Lagos and nearby Ogun towns arrive within 24 hours. Deliveries to other Nigerian states (Abuja, Port Harcourt, Ibadan, etc.) take between 1 to 3 business days via verified transit couriers.</p>
+          </div>
+          <div class="faq-item">
+            <h3 class="faq-q"><i class="fas fa-circle-question" style="color: var(--primary);"></i> Are there synthetic preservatives in Successful Herbs?</h3>
+            <p class="faq-a">No. All our formulas rely on natural bio-preservatives (indigenous lime, ginger, and traditional extraction methods) with zero artificial chemical preservatives or synthetic additives.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Slide-Over Shopping Cart Drawer -->
+  <div class="cart-drawer-overlay"></div>
+  <aside class="cart-drawer" aria-label="Shopping Cart Drawer">
+    <div class="cart-drawer-header">
+      <h3 class="cart-drawer-title">
+        <i class="fas fa-shopping-basket" style="color: var(--primary);"></i>
+        Your Herbal Basket
+      </h3>
+      <button class="btn-close-drawer" aria-label="Close cart"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="cart-drawer-body">
+      <!-- Items dynamically populated -->
+    </div>
+
+    <div class="cart-drawer-footer">
+      <div class="cart-summary-row">
+        <span>Total Amount:</span>
+        <span id="cartDrawerTotal" style="color: var(--primary);">₦0</span>
+      </div>
+
+      <div class="cart-checkout-box">
+        <div class="checkout-box-title">
+          <i class="fab fa-whatsapp" style="color: var(--whatsapp); font-size: 1.1rem;"></i>
+          Fast WhatsApp Checkout Info
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="text" id="checkoutCustName" class="form-control" placeholder="Your Full Name *" required style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="tel" id="checkoutCustPhone" class="form-control" placeholder="Phone Number (e.g. 0814...) *" required style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="text" id="checkoutCustAddress" class="form-control" placeholder="Delivery Street Address" style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="text" id="checkoutCustCityState" class="form-control" placeholder="City & State (e.g. Abeokuta, Ogun)" style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <input type="text" id="checkoutCustNotes" class="form-control" placeholder="Notes (e.g. Preferred delivery time)" style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+      </div>
+
+      <button id="btnWhatsAppCheckout" class="btn btn-whatsapp btn-whatsapp-checkout">
+        <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> Complete Order on WhatsApp
+      </button>
+    </div>
+  </aside>
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/2348148880378?text=Hello%20Successful%20Wellness%20Herbs%2C%20I%20would%20like%20to%20consult%20with%20you" target="_blank" class="floating-whatsapp" title="Chat with us on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+    <span>Order on WhatsApp</span>
+  </a>
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand Info -->
+        <div class="footer-brand">
+          <img src="images/brand-logo.jpeg" alt="Successful Wellness Herbs" class="brand-logo-img">
+          <h3 class="footer-brand-title">SUCCESSFUL WELLNESS HERBS</h3>
+          <div class="footer-tagline">Your Path To Natural Wellness</div>
+          <p class="footer-desc">
+            Empowering individuals with pure, time-honored traditional Nigerian herbal remedies. 
+            Crafted with sacred indigenous roots and uncompromising hygiene to restore whole-body wellness.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" class="footer-link"><i class="fas fa-angle-right"></i> Home</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-angle-right"></i> Shop Remedies</a></li>
+            <li><a href="reviews.html" class="footer-link"><i class="fas fa-angle-right"></i> Customer Reviews</a></li>
+            <li><a href="index.html#about" class="footer-link"><i class="fas fa-angle-right"></i> About Our Heritage</a></li>
+            <li><a href="contact.html" class="footer-link"><i class="fas fa-angle-right"></i> Contact & Consult</a></li>
+          </ul>
+        </div>
+
+        <!-- Popular Remedies -->
+        <div>
+          <h4 class="footer-heading">Herbal Solutions</h4>
+          <ul class="footer-links">
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Immunity & Vitality</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Pure Organic Detox</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Stamina & Energy</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Anti-Ulcer Gastric Brew</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Womb & Fertility Tonic</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact Details -->
+        <div>
+          <h4 class="footer-heading">Store Location & Contact</h4>
+          <div class="footer-contact-list">
+            <div class="footer-contact-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Ojere via Moshood ABIOLA polytechnic Pansheke Abeokuta Ogun state Nigeria</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-phone-alt"></i>
+              <span>0814 888 0378<br>+234 902 864 6068</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-envelope"></i>
+              <span>Successfulwellnessherbs@gmail.com</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-clock"></i>
+              <span>Mon - Sat: 8:00 AM - 7:00 PM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 <strong>SUCCESSFUL WELLNESS HERBS</strong>. All Rights Reserved.
+        </div>
+        <div>
+          <!-- Discreet Admin Portal Link -->
+          <a href="admin.html" class="footer-admin-link" title="Staff & Management Portal">
+            <i class="fas fa-lock"></i> Staff Portal
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("contactInquiryForm");
+      const btnWhatsApp = document.getElementById("btnSendViaWhatsApp");
+
+      function formatMessage() {
+        const name = document.getElementById("contactName").value.trim();
+        const phone = document.getElementById("contactPhone").value.trim();
+        const subject = document.getElementById("contactSubject").value;
+        const msg = document.getElementById("contactMessage").value.trim();
+
+        if (!name || !phone || !msg) {
+          showToast("Please fill in your name, phone number, and message.", "error");
+          return null;
+        }
+
+        return `🌿 *NEW CONSULTATION INQUIRY* 🌿\n---------------------------------\n*Name:* ${name}\n*Phone:* ${phone}\n*Subject:* ${subject}\n*Details:* ${msg}\n---------------------------------\nHello Successful Wellness Herbs, I am reaching out for advice and prescription!`;
+      }
+
+      if (btnWhatsApp) {
+        btnWhatsApp.addEventListener("click", () => {
+          const text = formatMessage();
+          if (text) {
+            const url = `https://wa.me/2348148880378?text=${encodeURIComponent(text)}`;
+            window.open(url, "_blank");
+          }
+        });
+      }
+
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const text = formatMessage();
+          if (text) {
+            showToast("Thank you! Your message has been sent. We will contact you shortly.", "success");
+            form.reset();
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

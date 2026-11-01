@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | Successful Wellness Herbs</title>
+  <link rel="icon" type="image/jpeg" href="images/brand-logo.jpeg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- Security Authentication Gate -->
+  <div class="admin-auth-screen" id="adminAuthScreen">
+    <div class="admin-login-box">
+      <img src="images/brand-logo.jpeg" alt="Successful Wellness Herbs" class="admin-login-logo">
+      <h1 class="admin-login-title">Staff & Admin Portal</h1>
+      <p class="admin-login-desc">Enter your 4+ digit Admin PIN to manage products, reviews, and store inventory.</p>
+
+      <form id="adminLoginForm">
+        <div class="form-group" style="position: relative;">
+          <input type="password" id="adminPinInput" class="form-control admin-pin-input" placeholder="••••" required autofocus>
+          <button type="button" id="togglePinVisibilityBtn" title="Show/Hide PIN" style="position: absolute; right: 14px; top: 18px; background: none; border: none; color: var(--admin-muted); cursor: pointer; font-size: 1.1rem;">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">
+          <i class="fas fa-lock-open"></i> Unlock Admin Access
+        </button>
+      </form>
+
+      <div class="admin-hint" style="margin-top: 14px;">
+        <button type="button" id="resetPinFromLoginBtn" style="background: none; border: none; color: var(--admin-primary); font-size: 0.84rem; font-weight: 600; cursor: pointer; text-decoration: underline;">
+          <i class="fas fa-key"></i> Forgot PIN? Recover / Reset Access
+        </button>
+      </div>
+
+      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #eee;">
+        <a href="index.html" style="font-size: 0.85rem; color: var(--admin-muted); display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fas fa-arrow-left"></i> Return to Main Website
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Admin Dashboard -->
+  <div class="admin-dashboard" id="adminDashboard">
+    <!-- Admin Top Navigation Bar -->
+    <header class="admin-nav">
+      <div class="admin-nav-left">
+        <img src="images/brand-logo.jpeg" alt="Logo" class="admin-nav-logo">
+        <div>
+          <div class="admin-nav-brand">SUCCESSFUL WELLNESS HERBS</div>
+          <div style="font-size: 0.72rem; color: #a3c9b0; text-transform: uppercase;">Management Control Center</div>
+        </div>
+      </div>
+      <div class="admin-nav-right">
+        <a href="index.html" target="_blank" class="btn btn-sm btn-outline" style="border-color: rgba(255,255,255,0.4); color: #fff;">
+          <i class="fas fa-external-link-alt"></i> View Live Site
+        </a>
+        <button id="adminLogoutBtn" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- Admin Tabs Bar -->
+    <nav class="admin-tabs-bar" aria-label="Admin Navigation Tabs">
+      <button class="admin-tab-btn active" data-tab="products">
+        <i class="fas fa-box-open"></i> Products Catalog (<span id="statTotalProducts">0</span>)
+      </button>
+      <button class="admin-tab-btn" data-tab="reviews">
+        <i class="fas fa-comments"></i> Customer Reviews & Proof (<span id="statTotalReviews">0</span>)
+      </button>
+      <button class="admin-tab-btn" data-tab="settings">
+        <i class="fas fa-sliders-h"></i> Settings & Backup
+      </button>
+    </nav>
+
+    <!-- Admin Main Body -->
+    <main class="admin-main-content">
+      <!-- Quick Stats -->
+      <section class="admin-stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-pills"></i></div>
+          <div>
+            <div class="stat-value" id="statInStockProducts">0</div>
+            <div class="stat-label">Active In-Stock Remedies</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: var(--accent-gold-soft); color: var(--accent-gold);"><i class="fas fa-camera"></i></div>
+          <div>
+            <div class="stat-value" id="statPhotoReviews">0</div>
+            <div class="stat-label">Verified Photo Reviews</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(37, 211, 102, 0.15); color: #128c7e;"><i class="fab fa-whatsapp"></i></div>
+          <div>
+            <div class="stat-value">24/7</div>
+            <div class="stat-label">WhatsApp Order Exit Active</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 1: PRODUCTS MANAGEMENT -->
+      <section class="admin-tab-pane" id="tab_products">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <div>
+              <h2 class="admin-card-title">Manage Herbal Remedies</h2>
+              <p style="font-size: 0.88rem; color: var(--admin-muted);">Add new products, edit pricing, upload photos, or change stock availability.</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('addProductModal').classList.add('active')">
+                <i class="fas fa-plus-circle"></i> + Add New Product
+              </button>
+              <button class="btn btn-outline btn-sm" id="btnResetProducts" title="Restore default remedies">
+                <i class="fas fa-undo"></i> Reset Defaults
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">Image</th>
+                  <th>Product Title</th>
+                  <th>Category</th>
+                  <th>Price (₦)</th>
+                  <th>Status</th>
+                  <th style="width: 100px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminProductsTableBody">
+                <!-- Populated by admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: REVIEWS & COMMENTS MANAGEMENT -->
+      <section class="admin-tab-pane" id="tab_reviews" style="display: none;">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <div>
+              <h2 class="admin-card-title">Customer Reviews & Proof Management</h2>
+              <p style="font-size: 0.88rem; color: var(--admin-muted);">Admin can directly post new reviews with picture or text, approve comments, or delete spam.</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('adminAddReviewModal').classList.add('active')">
+                <i class="fas fa-plus-circle"></i> + Admin Post New Review
+              </button>
+              <button class="btn btn-outline btn-sm" id="btnResetReviews">
+                <i class="fas fa-undo"></i> Reset Reviews
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Customer & Location</th>
+                  <th>Rating & Remedy</th>
+                  <th>Review Comment</th>
+                  <th>Photo Proof</th>
+                  <th>Visibility</th>
+                  <th style="width: 80px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminReviewsTableBody">
+                <!-- Populated by admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: SETTINGS & BACKUP -->
+      <section class="admin-tab-pane" id="tab_settings" style="display: none;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+          <!-- Security PIN -->
+          <div class="admin-card">
+            <h3 class="admin-card-title" style="margin-bottom: 8px;">Update Admin Security PIN</h3>
+            <p style="font-size: 0.88rem; color: var(--admin-muted); margin-bottom: 20px;">
+              Current PIN: <strong id="displayCurrentPin" style="color: var(--admin-primary); font-size: 1.1rem;">admin123</strong>
+            </p>
+
+            <form id="changePinForm">
+              <div class="form-group">
+                <label class="form-label" for="newAdminPin">New Security PIN (at least 4 characters) *</label>
+                <input type="text" id="newAdminPin" class="form-control" placeholder="Enter new PIN" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm" style="margin-top: 10px;">
+                <i class="fas fa-save"></i> Save New PIN
+              </button>
+            </form>
+          </div>
+
+          <!-- Data Backup & WhatsApp Info -->
+          <div class="admin-card">
+            <h3 class="admin-card-title" style="margin-bottom: 8px;">Store & Order Backup</h3>
+            <p style="font-size: 0.88rem; color: var(--admin-muted); margin-bottom: 16px;">
+              Download a complete JSON backup of all your customized products and reviews.
+            </p>
+
+            <div style="margin-bottom: 24px;">
+              <button id="btnExportBackup" class="btn btn-outline btn-sm">
+                <i class="fas fa-download"></i> Export Data Backup (JSON)
+              </button>
+            </div>
+
+            <div style="padding: 14px; background: var(--admin-bg); border-radius: 8px; font-size: 0.85rem;">
+              <strong>Active WhatsApp Dispatch Numbers:</strong><br>
+              <i class="fab fa-whatsapp" style="color: #25D366;"></i> 0814 888 0378<br>
+              <i class="fas fa-phone" style="color: var(--admin-muted);"></i> +234 902 864 6068<br>
+              <i class="fas fa-map-pin" style="color: var(--admin-muted);"></i> Moshood Abiola Poly, Pansheke Abeokuta
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL: ADD NEW PRODUCT -->
+  <div class="modal-overlay" id="addProductModal">
+    <div class="modal-card" style="max-width: 740px; padding: 32px;">
+      <button class="modal-close-btn" onclick="document.getElementById('addProductModal').classList.remove('active')">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <h2 style="font-family: var(--font-heading); color: var(--admin-primary); margin-bottom: 6px;">Add New Herbal Remedy</h2>
+      <p style="font-size: 0.88rem; color: var(--admin-muted); margin-bottom: 24px;">This product will appear immediately on the Homepage and Shop page.</p>
+
+      <form id="addProductForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="newProductName">Product Title *</label>
+            <input type="text" id="newProductName" class="form-control" placeholder="e.g. Pure Organic Detox Tonic" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newProductCategory">Category *</label>
+            <select id="newProductCategory" class="form-control" required>
+              <option value="Immunity & Detox">Immunity & Detox</option>
+              <option value="Vitality & Strength">Vitality & Strength</option>
+              <option value="Digestion & Ulcer">Digestion & Ulcer</option>
+              <option value="Hormonal & Fertility">Hormonal & Fertility</option>
+              <option value="Skin Wellness">Skin Wellness</option>
+              <option value="General Health">General Health</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="newProductPrice">Selling Price (₦) *</label>
+            <input type="number" id="newProductPrice" class="form-control" placeholder="e.g. 12500" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newProductOldPrice">Original / Discount Price (₦, Optional)</label>
+            <input type="number" id="newProductOldPrice" class="form-control" placeholder="e.g. 15000">
+          </div>
+        </div>
+
+        <!-- Image Selector: Upload or Presets -->
+        <div class="form-group">
+          <label class="form-label">Product Image (Upload Photo or Pick Asset)</label>
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <img id="newProductImgPreview" src="images/product-herbal-mixture.jpg" alt="Preview" style="width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 2px solid var(--admin-border);">
+            <div style="flex-grow: 1;">
+              <input type="file" id="newProductImgFile" class="form-control" accept="image/*" style="padding: 8px;">
+              <div style="font-size: 0.75rem; color: var(--admin-muted); margin-top: 4px;">Upload from your computer/phone, or select a preset below:</div>
+            </div>
+          </div>
+          <div class="image-preset-picker" id="newProductPresets">
+            <img src="images/product-herbal-mixture.jpg" class="preset-thumb selected" data-src="images/product-herbal-mixture.jpg" alt="Preset 1">
+            <img src="images/product-detox-tonic.jpg" class="preset-thumb" data-src="images/product-detox-tonic.jpg" alt="Preset 2">
+            <img src="images/product-vitality-extract.jpg" class="preset-thumb" data-src="images/product-vitality-extract.jpg" alt="Preset 3">
+            <img src="images/brand-logo.jpeg" class="preset-thumb" data-src="images/brand-logo.jpeg" alt="Logo">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newProductShortDesc">Short Summary (Shows on card)</label>
+          <input type="text" id="newProductShortDesc" class="form-control" placeholder="Quick 1-sentence summary of what this remedy cures">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newProductDesc">Full Detailed Description</label>
+          <textarea id="newProductDesc" class="form-control" placeholder="Detailed herbal description, what roots are used, and conditions treated..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newProductBenefits">Key Benefits (One benefit per line)</label>
+          <textarea id="newProductBenefits" class="form-control" placeholder="Flushes toxins&#10;Boosts immune system&#10;Restores daily stamina"></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="newProductIngredients">Medicinal Ingredients</label>
+            <input type="text" id="newProductIngredients" class="form-control" placeholder="e.g. Vernonia amygdalina, Ginger, Moringa">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newProductUsage">Dosage / Usage Instructions</label>
+            <input type="text" id="newProductUsage" class="form-control" placeholder="e.g. 1 tot glass morning and evening">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 24px; margin-bottom: 24px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem;">
+            <input type="checkbox" id="newProductInStock" checked>
+            <strong>In Stock for Sale</strong>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem;">
+            <input type="checkbox" id="newProductFeatured">
+            <strong>Feature on Homepage</strong>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('addProductModal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Add Product to Store</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT PRODUCT -->
+  <div class="modal-overlay" id="editProductModal">
+    <div class="modal-card" style="max-width: 740px; padding: 32px;">
+      <button class="modal-close-btn" onclick="document.getElementById('editProductModal').classList.remove('active')">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <h2 style="font-family: var(--font-heading); color: var(--admin-primary); margin-bottom: 6px;">Edit Herbal Remedy</h2>
+      <p style="font-size: 0.88rem; color: var(--admin-muted); margin-bottom: 24px;">Update remedy pricing, image, dosage, or stock status.</p>
+
+      <form id="editProductForm">
+        <input type="hidden" id="editProductId">
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="editProductName">Product Title *</label>
+            <input type="text" id="editProductName" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editProductCategory">Category *</label>
+            <select id="editProductCategory" class="form-control" required>
+              <option value="Immunity & Detox">Immunity & Detox</option>
+              <option value="Vitality & Strength">Vitality & Strength</option>
+              <option value="Digestion & Ulcer">Digestion & Ulcer</option>
+              <option value="Hormonal & Fertility">Hormonal & Fertility</option>
+              <option value="Skin Wellness">Skin Wellness</option>
+              <option value="General Health">General Health</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="editProductPrice">Selling Price (₦) *</label>
+            <input type="number" id="editProductPrice" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editProductOldPrice">Original / Discount Price (₦)</label>
+            <input type="number" id="editProductOldPrice" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Product Image</label>
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <img id="editProductImgPreview" src="" alt="Preview" style="width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 2px solid var(--admin-border);">
+            <div style="flex-grow: 1;">
+              <input type="file" id="editProductImgFile" class="form-control" accept="image/*" style="padding: 8px;">
+            </div>
+          </div>
+          <div class="image-preset-picker" id="editProductPresets">
+            <img src="images/product-herbal-mixture.jpg" class="preset-thumb" data-src="images/product-herbal-mixture.jpg" alt="Preset 1">
+            <img src="images/product-detox-tonic.jpg" class="preset-thumb" data-src="images/product-detox-tonic.jpg" alt="Preset 2">
+            <img src="images/product-vitality-extract.jpg" class="preset-thumb" data-src="images/product-vitality-extract.jpg" alt="Preset 3">
+            <img src="images/brand-logo.jpeg" class="preset-thumb" data-src="images/brand-logo.jpeg" alt="Logo">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="editProductShortDesc">Short Summary</label>
+          <input type="text" id="editProductShortDesc" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="editProductDesc">Full Detailed Description</label>
+          <textarea id="editProductDesc" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="editProductBenefits">Key Benefits (One per line)</label>
+          <textarea id="editProductBenefits" class="form-control"></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="editProductIngredients">Medicinal Ingredients</label>
+            <input type="text" id="editProductIngredients" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editProductUsage">Dosage / Usage Instructions</label>
+            <input type="text" id="editProductUsage" class="form-control">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 24px; margin-bottom: 24px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem;">
+            <input type="checkbox" id="editProductInStock">
+            <strong>In Stock for Sale</strong>
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem;">
+            <input type="checkbox" id="editProductFeatured">
+            <strong>Feature on Homepage</strong>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('editProductModal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN POST NEW REVIEW (Picture or Text) -->
+  <div class="modal-overlay" id="adminAddReviewModal">
+    <div class="modal-card" style="max-width: 640px; padding: 32px;">
+      <button class="modal-close-btn" onclick="document.getElementById('adminAddReviewModal').classList.remove('active')">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <h2 style="font-family: var(--font-heading); color: var(--admin-primary); margin-bottom: 6px;">Post Customer Review as Admin</h2>
+      <p style="font-size: 0.88rem; color: var(--admin-muted); margin-bottom: 24px;">
+        Publish an authentic testimonial received via WhatsApp, phone, or in-store with picture proof or plain text.
+      </p>
+
+      <form id="adminPostReviewForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="adminReviewAuthor">Customer Name *</label>
+            <input type="text" id="adminReviewAuthor" class="form-control" placeholder="e.g. Chief Adeleke O." required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="adminReviewLocation">City & State *</label>
+            <input type="text" id="adminReviewLocation" class="form-control" placeholder="e.g. Abeokuta, Ogun" required>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="adminReviewRating">Rating *</label>
+            <select id="adminReviewRating" class="form-control">
+              <option value="5">★★★★★ (5 Stars - Excellent)</option>
+              <option value="4">★★★★☆ (4 Stars - Very Good)</option>
+              <option value="3">★★★☆☆ (3 Stars - Good)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="adminReviewProduct">Product Reviewed</label>
+            <select id="adminReviewProduct" class="form-control"></select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="adminReviewText">Review Feedback / Testimony *</label>
+          <textarea id="adminReviewText" class="form-control" placeholder="What the customer said about their healing and satisfaction..." required></textarea>
+        </div>
+
+        <!-- Photo Upload (Optional) -->
+        <div class="form-group">
+          <label class="form-label">Upload Picture Proof (Optional - Picture or Ordinary Text)</label>
+          <input type="file" id="adminReviewPhotoFile" class="form-control" accept="image/*" style="padding: 8px;">
+          <div class="file-preview-wrap" id="adminReviewPreviewWrap" style="margin-top: 10px; display: none;">
+            <img id="adminReviewPhotoPreview" src="" alt="Review preview" style="max-height: 120px; border-radius: 6px;">
+            <button type="button" class="btn-remove-preview" id="adminRemoveReviewPhotoBtn"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('adminAddReviewModal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Publish Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/reviews.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

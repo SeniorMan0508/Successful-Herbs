@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop Natural Herbal Remedies | Successful Wellness Herbs</title>
+  <meta name="description" content="Shop pure traditional herbal mixtures, vitality tonics, detox brews, and wellness extracts. Order on WhatsApp with fast delivery across Nigeria.">
+  <link rel="icon" type="image/jpeg" href="images/brand-logo.jpeg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .shop-header-banner {
+      background: linear-gradient(135deg, #0c331a 0%, #154c29 100%);
+      color: #ffffff;
+      padding: 60px 0;
+      text-align: center;
+      position: relative;
+    }
+    .shop-filter-bar {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px 24px;
+      margin-bottom: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .search-input-wrap {
+      position: relative;
+      flex-grow: 1;
+      max-width: 400px;
+    }
+    .search-input-wrap i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+    }
+    .search-input {
+      padding-left: 40px !important;
+    }
+    .category-pills {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+    .category-pill {
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .category-pill:hover, .category-pill.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <aside class="top-bar" aria-label="Announcement & Contact Bar">
+    <div class="container">
+      <div class="top-bar-left">
+        <span class="top-bar-item">
+          <i class="fas fa-map-marker-alt"></i> Ojere via Moshood Abiola Poly, Pansheke, Abeokuta
+        </span>
+        <span class="top-bar-item">
+          <i class="fas fa-phone-alt"></i> 
+          <a href="tel:08148880378">0814 888 0378</a> &bull; <a href="tel:+2349028646068">+234 902 864 6068</a>
+        </span>
+      </div>
+      <div class="top-bar-right">
+        <span class="top-bar-item">
+          <i class="fas fa-envelope"></i> 
+          <a href="mailto:Successfulwellnessherbs@gmail.com">Successfulwellnessherbs@gmail.com</a>
+        </span>
+        <span class="top-bar-badge"><i class="fas fa-truck"></i> Fast Delivery Nationwide</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Sticky Main Header -->
+  <header class="main-header">
+    <div class="container">
+      <div class="header-inner">
+        <!-- Brand Logo & Name -->
+        <a href="index.html" class="brand-logo-wrap">
+          <img src="images/brand-logo.jpeg" alt="Successful Wellness Herbs Logo" class="brand-logo-img">
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav>
+          <ul class="nav-menu">
+            <li><a href="index.html" class="nav-link">Home</a></li>
+            <li><a href="shop.html" class="nav-link active">Shop Remedies</a></li>
+            <li><a href="reviews.html" class="nav-link">Customer Reviews</a></li>
+            <li><a href="index.html#about" class="nav-link">About Us</a></li>
+            <li><a href="contact.html" class="nav-link">Contact & Consult</a></li>
+          </ul>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="header-actions">
+          <!-- Cart Trigger -->
+          <button class="cart-toggle-btn" aria-label="Open Shopping Cart">
+            <i class="fas fa-shopping-basket"></i>
+            <span class="cart-badge" style="display: none;">0</span>
+          </button>
+
+          <!-- Mobile Toggle -->
+          <button class="mobile-menu-btn" aria-label="Toggle navigation menu">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Shop Header Banner -->
+  <section class="shop-header-banner">
+    <div class="container">
+      <span class="section-tag" style="color: var(--accent-gold-light);">Natural Apothecary Catalog</span>
+      <h1 class="section-title" style="color: #ffffff; margin-bottom: 12px;">Potent Traditional Herbal Remedies</h1>
+      <p style="color: #d1e7d8; max-width: 650px; margin: 0 auto; font-size: 1.05rem;">
+        Browse our pure herbal formulations. Add items to your basket and complete your order directly to WhatsApp for rapid delivery!
+      </p>
+    </div>
+  </section>
+
+  <!-- Shop Main Content -->
+  <main class="section">
+    <div class="container">
+      <!-- Category Pills -->
+      <div class="category-pills" id="categoryPillContainer">
+        <button class="category-pill active" data-cat="all">All Remedies</button>
+        <button class="category-pill" data-cat="Immunity & Detox">Immunity & Detox</button>
+        <button class="category-pill" data-cat="Vitality & Strength">Vitality & Strength</button>
+        <button class="category-pill" data-cat="Digestion & Ulcer">Digestion & Ulcer</button>
+        <button class="category-pill" data-cat="Hormonal & Fertility">Hormonal & Fertility</button>
+        <button class="category-pill" data-cat="Skin Wellness">Skin Wellness</button>
+      </div>
+
+      <!-- Search & Sort Filter Bar -->
+      <div class="shop-filter-bar">
+        <div class="search-input-wrap">
+          <i class="fas fa-search"></i>
+          <input type="text" id="shopSearchInput" class="form-control search-input" placeholder="Search remedies, symptoms, or ingredients...">
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label for="shopSortSelect" style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted); white-space: nowrap;">Sort by:</label>
+          <select id="shopSortSelect" class="form-control" style="width: auto; min-width: 170px;">
+            <option value="featured">Featured Remedies</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="name_asc">Name: A to Z</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="shopProductsGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Product Detail Modal (Quick View) -->
+  <div class="modal-overlay" id="productDetailModal">
+    <div class="modal-card">
+      <button class="modal-close-btn" aria-label="Close modal"><i class="fas fa-times"></i></button>
+      <div class="product-detail-grid">
+        <div>
+          <img id="modalImg" src="" alt="Product Detail" class="modal-product-img">
+        </div>
+        <div class="modal-product-info">
+          <span class="product-cat" id="modalCategory" style="margin-bottom: 6px;">Category</span>
+          <h2 class="modal-product-title" id="modalTitle">Product Title</h2>
+          <div class="modal-price-box">
+            <span class="modal-price" id="modalPrice">₦0</span>
+            <span class="modal-old-price" id="modalOldPrice"></span>
+          </div>
+
+          <p id="modalDesc" style="font-size: 0.92rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 16px;"></p>
+
+          <h4 class="modal-section-title">Key Health Benefits:</h4>
+          <ul class="modal-benefits-list" id="modalBenefits"></ul>
+
+          <h4 class="modal-section-title">Medicinal Ingredients:</h4>
+          <p id="modalIngredients" style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 12px;"></p>
+
+          <h4 class="modal-section-title">Usage & Dosage:</h4>
+          <p id="modalUsage" style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 16px;"></p>
+
+          <div class="modal-actions">
+            <button class="btn btn-primary" id="modalAddToCartBtn" style="flex: 1;">
+              <i class="fas fa-cart-plus"></i> Add To Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide-Over Shopping Cart Drawer (Exit to WhatsApp) -->
+  <div class="cart-drawer-overlay"></div>
+  <aside class="cart-drawer" aria-label="Shopping Cart Drawer">
+    <div class="cart-drawer-header">
+      <h3 class="cart-drawer-title">
+        <i class="fas fa-shopping-basket" style="color: var(--primary);"></i>
+        Your Herbal Basket
+      </h3>
+      <button class="btn-close-drawer" aria-label="Close cart"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="cart-drawer-body">
+      <!-- Items dynamically populated -->
+    </div>
+
+    <div class="cart-drawer-footer">
+      <div class="cart-summary-row">
+        <span>Total Amount:</span>
+        <span id="cartDrawerTotal" style="color: var(--primary);">₦0</span>
+      </div>
+
+      <!-- Customer Checkout Details for WhatsApp Exit -->
+      <div class="cart-checkout-box">
+        <div class="checkout-box-title">
+          <i class="fab fa-whatsapp" style="color: var(--whatsapp); font-size: 1.1rem;"></i>
+          Fast WhatsApp Checkout Info
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="text" id="checkoutCustName" class="form-control" placeholder="Your Full Name *" required style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="tel" id="checkoutCustPhone" class="form-control" placeholder="Phone Number (e.g. 0814...) *" required style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="text" id="checkoutCustAddress" class="form-control" placeholder="Delivery Street Address" style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <input type="text" id="checkoutCustCityState" class="form-control" placeholder="City & State (e.g. Abeokuta, Ogun)" style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <input type="text" id="checkoutCustNotes" class="form-control" placeholder="Notes (e.g. Preferred delivery time)" style="padding: 8px 12px; font-size: 0.88rem;">
+        </div>
+      </div>
+
+      <button id="btnWhatsAppCheckout" class="btn btn-whatsapp btn-whatsapp-checkout">
+        <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> Complete Order on WhatsApp
+      </button>
+    </div>
+  </aside>
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/2348148880378?text=Hello%20Successful%20Wellness%20Herbs%2C%20I%20would%20like%20to%20order%20from%20your%20shop" target="_blank" class="floating-whatsapp" title="Chat with us on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+    <span>Order on WhatsApp</span>
+  </a>
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand Info -->
+        <div class="footer-brand">
+          <img src="images/brand-logo.jpeg" alt="Successful Wellness Herbs" class="brand-logo-img">
+          <h3 class="footer-brand-title">SUCCESSFUL WELLNESS HERBS</h3>
+          <div class="footer-tagline">Your Path To Natural Wellness</div>
+          <p class="footer-desc">
+            Empowering individuals with pure, time-honored traditional Nigerian herbal remedies. 
+            Crafted with sacred indigenous roots and uncompromising hygiene to restore whole-body wellness.
+          </p>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" class="footer-link"><i class="fas fa-angle-right"></i> Home</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-angle-right"></i> Shop Remedies</a></li>
+            <li><a href="reviews.html" class="footer-link"><i class="fas fa-angle-right"></i> Customer Reviews</a></li>
+            <li><a href="index.html#about" class="footer-link"><i class="fas fa-angle-right"></i> About Our Heritage</a></li>
+            <li><a href="contact.html" class="footer-link"><i class="fas fa-angle-right"></i> Contact & Consult</a></li>
+          </ul>
+        </div>
+
+        <!-- Popular Remedies -->
+        <div>
+          <h4 class="footer-heading">Herbal Solutions</h4>
+          <ul class="footer-links">
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Immunity & Vitality</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Pure Organic Detox</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Stamina & Energy</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Anti-Ulcer Gastric Brew</a></li>
+            <li><a href="shop.html" class="footer-link"><i class="fas fa-leaf"></i> Womb & Fertility Tonic</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact Details -->
+        <div>
+          <h4 class="footer-heading">Store Location & Contact</h4>
+          <div class="footer-contact-list">
+            <div class="footer-contact-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Ojere via Moshood ABIOLA polytechnic Pansheke Abeokuta Ogun state Nigeria</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-phone-alt"></i>
+              <span>0814 888 0378<br>+234 902 864 6068</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-envelope"></i>
+              <span>Successfulwellnessherbs@gmail.com</span>
+            </div>
+            <div class="footer-contact-item">
+              <i class="fas fa-clock"></i>
+              <span>Mon - Sat: 8:00 AM - 7:00 PM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 <strong>SUCCESSFUL WELLNESS HERBS</strong>. All Rights Reserved.
+        </div>
+        <div>
+          <!-- Discreet Admin Portal Link -->
+          <a href="admin.html" class="footer-admin-link" title="Staff & Management Portal">
+            <i class="fas fa-lock"></i> Staff Portal
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Shop Page Dynamic Catalog Filter & Search Logic
+    let currentCategory = "all";
+    let searchQuery = "";
+    let sortOption = "featured";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderShopCatalog();
+
+      // Listen for products update from Admin
+      window.addEventListener("productsUpdated", renderShopCatalog);
+
+      // Category Pills
+      const pills = document.querySelectorAll(".category-pill");
+      pills.forEach(pill => {
+        pill.addEventListener("click", () => {
+          pills.forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          currentCategory = pill.getAttribute("data-cat");
+          renderShopCatalog();
+        });
+      });
+
+      // Search Input
+      const searchInput = document.getElementById("shopSearchInput");
+      if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+          searchQuery = e.target.value.toLowerCase().trim();
+          renderShopCatalog();
+        });
+      }
+
+      // Sort Select
+      const sortSelect = document.getElementById("shopSortSelect");
+      if (sortSelect) {
+        sortSelect.addEventListener("change", (e) => {
+          sortOption = e.target.value;
+          renderShopCatalog();
+        });
+      }
+    });
+
+    function renderShopCatalog() {
+      const grid = document.getElementById("shopProductsGrid");
+      if (!grid || !window.DataStore) return;
+
+      let products = DataStore.getProducts();
+
+      // Filter category
+      if (currentCategory !== "all") {
+        products = products.filter(p => p.category === currentCategory);
+      }
+
+      // Filter search
+      if (searchQuery) {
+        products = products.filter(p => {
+          const inName = p.name.toLowerCase().includes(searchQuery);
+          const inDesc = (p.description || "").toLowerCase().includes(searchQuery);
+          const inShortDesc = (p.shortDesc || "").toLowerCase().includes(searchQuery);
+          const inIngr = (p.ingredients || "").toLowerCase().includes(searchQuery);
+          return inName || inDesc || inShortDesc || inIngr;
+        });
+      }
+
+      // Sort
+      if (sortOption === "price_asc") {
+        products.sort((a, b) => a.price - b.price);
+      } else if (sortOption === "price_desc") {
+        products.sort((a, b) => b.price - a.price);
+      } else if (sortOption === "name_asc") {
+        products.sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      if (products.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #ffffff; border-radius: 12px; border: 1px dashed var(--border-color);">
+            <i class="fas fa-search" style="font-size: 3rem; color: var(--text-light); margin-bottom: 16px;"></i>
+            <h3 style="color: var(--primary-deep); margin-bottom: 8px;">No Herbal Remedies Found</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
+              We couldn't find any products matching your search criteria. Try a different keyword or reset filters.
+            </p>
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('shopSearchInput').value=''; searchQuery=''; renderShopCatalog();">
+              Clear Search
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      let html = "";
+      products.forEach(p => {
+        html += createProductCardHTML(p);
+      });
+      grid.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
