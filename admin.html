@@ -25,11 +25,11 @@
     <div class="admin-login-box">
       <img src="images/brand-logo.jpeg" alt="Successful Wellness Herbs" class="admin-login-logo">
       <h1 class="admin-login-title">Staff & Admin Portal</h1>
-      <p class="admin-login-desc">Enter your 4+ digit Admin PIN to manage products, reviews, and store inventory.</p>
+      <p class="admin-login-desc">Enter your 6+ character Admin PIN to manage products, reviews, and store inventory.</p>
 
       <form id="adminLoginForm">
         <div class="form-group" style="position: relative;">
-          <input type="password" id="adminPinInput" class="form-control admin-pin-input" placeholder="••••" required autofocus>
+          <input type="password" id="adminPinInput" class="form-control admin-pin-input" placeholder="••••••" minlength="6" required autofocus>
           <button type="button" id="togglePinVisibilityBtn" title="Show/Hide PIN" style="position: absolute; right: 14px; top: 18px; background: none; border: none; color: var(--admin-muted); cursor: pointer; font-size: 1.1rem;">
             <i class="fas fa-eye"></i>
           </button>
@@ -38,12 +38,6 @@
           <i class="fas fa-lock-open"></i> Unlock Admin Access
         </button>
       </form>
-
-      <div class="admin-hint" style="margin-top: 14px;">
-        <button type="button" id="resetPinFromLoginBtn" style="background: none; border: none; color: var(--admin-primary); font-size: 0.84rem; font-weight: 600; cursor: pointer; text-decoration: underline;">
-          <i class="fas fa-key"></i> Forgot PIN? Recover / Reset Access
-        </button>
-      </div>
 
       <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #eee;">
         <a href="index.html" style="font-size: 0.85rem; color: var(--admin-muted); display: inline-flex; align-items: center; gap: 6px;">
@@ -59,11 +53,8 @@
     <header class="admin-nav">
       <div class="admin-nav-left">
         <img src="images/brand-logo.jpeg" alt="Logo" class="admin-nav-logo">
-        <div>
-          <div class="admin-nav-brand">SUCCESSFUL WELLNESS HERBS</div>
-          <div style="font-size: 0.72rem; color: #a3c9b0; text-transform: uppercase;">Management Control Center</div>
-        </div>
       </div>
+      
       <div class="admin-nav-right">
         <a href="index.html" target="_blank" class="btn btn-sm btn-outline" style="border-color: rgba(255,255,255,0.4); color: #fff;">
           <i class="fas fa-external-link-alt"></i> View Live Site
@@ -122,7 +113,7 @@
               <h2 class="admin-card-title">Manage Herbal Remedies</h2>
               <p style="font-size: 0.88rem; color: var(--admin-muted);">Add new products, edit pricing, upload photos, or change stock availability.</p>
             </div>
-            <div style="display: flex; gap: 10px;">
+            <div class="admin-card-actions">
               <button class="btn btn-primary btn-sm" onclick="document.getElementById('addProductModal').classList.add('active')">
                 <i class="fas fa-plus-circle"></i> + Add New Product
               </button>
@@ -160,7 +151,7 @@
               <h2 class="admin-card-title">Customer Reviews & Proof Management</h2>
               <p style="font-size: 0.88rem; color: var(--admin-muted);">Admin can directly post new reviews with picture or text, approve comments, or delete spam.</p>
             </div>
-            <div style="display: flex; gap: 10px;">
+            <div class="admin-card-actions">
               <button class="btn btn-primary btn-sm" onclick="document.getElementById('adminAddReviewModal').classList.add('active')">
                 <i class="fas fa-plus-circle"></i> + Admin Post New Review
               </button>
@@ -192,18 +183,15 @@
 
       <!-- TAB 3: SETTINGS & BACKUP -->
       <section class="admin-tab-pane" id="tab_settings" style="display: none;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+        <div class="admin-settings-grid">
           <!-- Security PIN -->
           <div class="admin-card">
             <h3 class="admin-card-title" style="margin-bottom: 8px;">Update Admin Security PIN</h3>
-            <p style="font-size: 0.88rem; color: var(--admin-muted); margin-bottom: 20px;">
-              Current PIN: <strong id="displayCurrentPin" style="color: var(--admin-primary); font-size: 1.1rem;">admin123</strong>
-            </p>
 
             <form id="changePinForm">
               <div class="form-group">
-                <label class="form-label" for="newAdminPin">New Security PIN (at least 4 characters) *</label>
-                <input type="text" id="newAdminPin" class="form-control" placeholder="Enter new PIN" required>
+                <label class="form-label" for="newAdminPin">New Security PIN (at least 6 characters) *</label>
+                <input type="password" id="newAdminPin" class="form-control" placeholder="Enter new PIN (min 6 characters)" minlength="6" autocomplete="new-password" required>
               </div>
               <button type="submit" class="btn btn-primary btn-sm" style="margin-top: 10px;">
                 <i class="fas fa-save"></i> Save New PIN
@@ -213,7 +201,7 @@
 
           <!-- Data Backup & WhatsApp Info -->
           <div class="admin-card">
-            <h3 class="admin-card-title" style="margin-bottom: 8px;">Store & Order Backup</h3>
+            <h3 class="admin-card-title" style="margin-bottom: 8px;">Store Data Backup</h3>
             <p style="font-size: 0.88rem; color: var(--admin-muted); margin-bottom: 16px;">
               Download a complete JSON backup of all your customized products and reviews.
             </p>
@@ -254,14 +242,18 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="newProductCategory">Category *</label>
-            <select id="newProductCategory" class="form-control" required>
-              <option value="Immunity & Detox">Immunity & Detox</option>
-              <option value="Vitality & Strength">Vitality & Strength</option>
-              <option value="Digestion & Ulcer">Digestion & Ulcer</option>
-              <option value="Hormonal & Fertility">Hormonal & Fertility</option>
-              <option value="Skin Wellness">Skin Wellness</option>
-              <option value="General Health">General Health</option>
-            </select>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <select id="newProductCategory" class="form-control" style="flex: 1;" required></select>
+              <button type="button" class="btn-icon-action btn-icon-delete" onclick="handleDeleteCategory('newProductCategory')" title="Delete selected category" style="width: 42px; height: 42px; flex-shrink: 0;">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <input type="text" id="addNewCategoryInput" class="form-control" placeholder="New category name..." style="padding: 8px 12px; font-size: 0.84rem;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="handleCreateCategory('addNewCategoryInput', 'newProductCategory')" style="white-space: nowrap; padding: 8px 14px;">
+                <i class="fas fa-plus"></i> Add
+              </button>
+            </div>
           </div>
         </div>
 
@@ -282,8 +274,8 @@
           <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
             <img id="newProductImgPreview" src="images/product-herbal-mixture.jpg" alt="Preview" style="width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 2px solid var(--admin-border);">
             <div style="flex-grow: 1;">
-              <input type="file" id="newProductImgFile" class="form-control" accept="image/*" style="padding: 8px;">
-              <div style="font-size: 0.75rem; color: var(--admin-muted); margin-top: 4px;">Upload from your computer/phone, or select a preset below:</div>
+              <input type="file" id="newProductImgFile" class="form-control" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="padding: 8px;">
+              <div style="font-size: 0.75rem; color: var(--admin-muted); margin-top: 4px;">Upload JPG, PNG, or WEBP (max 3 MB), or select a preset below:</div>
             </div>
           </div>
           <div class="image-preset-picker" id="newProductPresets">
@@ -359,14 +351,18 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="editProductCategory">Category *</label>
-            <select id="editProductCategory" class="form-control" required>
-              <option value="Immunity & Detox">Immunity & Detox</option>
-              <option value="Vitality & Strength">Vitality & Strength</option>
-              <option value="Digestion & Ulcer">Digestion & Ulcer</option>
-              <option value="Hormonal & Fertility">Hormonal & Fertility</option>
-              <option value="Skin Wellness">Skin Wellness</option>
-              <option value="General Health">General Health</option>
-            </select>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <select id="editProductCategory" class="form-control" style="flex: 1;" required></select>
+              <button type="button" class="btn-icon-action btn-icon-delete" onclick="handleDeleteCategory('editProductCategory')" title="Delete selected category" style="width: 42px; height: 42px; flex-shrink: 0;">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <input type="text" id="editNewCategoryInput" class="form-control" placeholder="New category name..." style="padding: 8px 12px; font-size: 0.84rem;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="handleCreateCategory('editNewCategoryInput', 'editProductCategory')" style="white-space: nowrap; padding: 8px 14px;">
+                <i class="fas fa-plus"></i> Add
+              </button>
+            </div>
           </div>
         </div>
 
@@ -386,7 +382,7 @@
           <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
             <img id="editProductImgPreview" src="" alt="Preview" style="width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 2px solid var(--admin-border);">
             <div style="flex-grow: 1;">
-              <input type="file" id="editProductImgFile" class="form-control" accept="image/*" style="padding: 8px;">
+              <input type="file" id="editProductImgFile" class="form-control" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="padding: 8px;">
             </div>
           </div>
           <div class="image-preset-picker" id="editProductPresets">
@@ -489,7 +485,7 @@
         <!-- Photo Upload (Optional) -->
         <div class="form-group">
           <label class="form-label">Upload Picture Proof (Optional - Picture or Ordinary Text)</label>
-          <input type="file" id="adminReviewPhotoFile" class="form-control" accept="image/*" style="padding: 8px;">
+          <input type="file" id="adminReviewPhotoFile" class="form-control" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="padding: 8px;">
           <div class="file-preview-wrap" id="adminReviewPreviewWrap" style="margin-top: 10px; display: none;">
             <img id="adminReviewPhotoPreview" src="" alt="Review preview" style="max-height: 120px; border-radius: 6px;">
             <button type="button" class="btn-remove-preview" id="adminRemoveReviewPhotoBtn"><i class="fas fa-times"></i></button>

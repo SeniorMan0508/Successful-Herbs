@@ -59,12 +59,16 @@ function initHeader() {
       navMenu.classList.toggle("mobile-open");
       const icon = mobileBtn.querySelector("i");
       if (icon) {
-        if (navMenu.classList.contains("mobile-open")) {
-          icon.className = "fas fa-times";
-        } else {
-          icon.className = "fas fa-bars";
-        }
+        icon.className = navMenu.classList.contains("mobile-open") ? "fas fa-times" : "fas fa-bars";
       }
+    });
+
+    navMenu.querySelectorAll(".nav-link").forEach(link => {
+      link.addEventListener("click", () => {
+        navMenu.classList.remove("mobile-open");
+        const icon = mobileBtn.querySelector("i");
+        if (icon) icon.className = "fas fa-bars";
+      });
     });
   }
 }

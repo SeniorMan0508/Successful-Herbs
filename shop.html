@@ -76,6 +76,37 @@
       color: #ffffff;
       border-color: var(--primary);
     }
+    @media (max-width: 768px) {
+      .shop-header-banner {
+        padding: 40px 0;
+      }
+      .shop-filter-bar {
+        padding: 14px 16px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input-wrap {
+        max-width: 100%;
+        width: 100%;
+      }
+      .shop-filter-bar > div {
+        width: 100%;
+        justify-content: space-between;
+      }
+      #shopSortSelect {
+        flex-grow: 1;
+      }
+      .category-pills {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .category-pill {
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -369,20 +400,17 @@
     let sortOption = "featured";
 
     document.addEventListener("DOMContentLoaded", () => {
+      renderShopCategoryPills();
       renderShopCatalog();
 
-      // Listen for products update from Admin
-      window.addEventListener("productsUpdated", renderShopCatalog);
-
-      // Category Pills
-      const pills = document.querySelectorAll(".category-pill");
-      pills.forEach(pill => {
-        pill.addEventListener("click", () => {
-          pills.forEach(p => p.classList.remove("active"));
-          pill.classList.add("active");
-          currentCategory = pill.getAttribute("data-cat");
-          renderShopCatalog();
-        });
+      // Listen for products or categories update from Admin
+      window.addEventListener("productsUpdated", () => {
+        renderShopCategoryPills();
+        renderShopCatalog();
+      });
+      window.addEventListener("categoriesUpdated", () => {
+        renderShopCategoryPills();
+        renderShopCatalog();
       });
 
       // Search Input
@@ -403,6 +431,31 @@
         });
       }
     });
+
+    function renderShopCategoryPills() {
+      const container = document.getElementById("categoryPillContainer");
+      if (!container || !window.DataStore) return;
+
+      const categories = DataStore.getCategories();
+      if (currentCategory !== "all" && !categories.includes(currentCategory)) {
+        currentCategory = "all";
+      }
+
+      let html = `<button class="category-pill ${currentCategory === 'all' ? 'active' : ''}" data-cat="all">All Remedies</button>`;
+      categories.forEach(cat => {
+        const isActive = currentCategory === cat ? "active" : "";
+        html += `<button class="category-pill ${isActive}" data-cat="${cat}">${cat}</button>`;
+      });
+      container.innerHTML = html;
+
+      container.querySelectorAll(".category-pill").forEach(pill => {
+        pill.addEventListener("click", () => {
+          currentCategory = pill.getAttribute("data-cat");
+          renderShopCategoryPills();
+          renderShopCatalog();
+        });
+      });
+    }
 
     function renderShopCatalog() {
       const grid = document.getElementById("shopProductsGrid");

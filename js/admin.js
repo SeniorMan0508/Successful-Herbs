@@ -9,11 +9,18 @@ document.addEventListener("DOMContentLoaded", () => {
   initProductForms();
   initAdminReviewForm();
   initSettingsForm();
+
+  window.addEventListener("productsUpdated", () => {
+    if (DataStore.getAdminToken()) refreshDashboard();
+  });
+  window.addEventListener("categoriesUpdated", () => {
+    if (DataStore.getAdminToken()) populateCategorySelects();
+  });
 });
 
-// Admin Authentication
-function checkAdminAuth() {
-  const isLoggedIn = sessionStorage.getItem("swh_admin_logged_in") === "true";
+// Admin Authentication (Server-verified Bearer Token)
+async function checkAdminAuth() {
+  const isLoggedIn = await DataStore.verifyAdminSessionAsync();
   const authScreen = document.getElementById("adminAuthScreen");
   const dashboard = document.getElementById("adminDashboard");
 
@@ -31,7 +38,6 @@ function initAdminAuthForm() {
   const loginForm = document.getElementById("adminLoginForm");
   const pinInput = document.getElementById("adminPinInput");
   const togglePinBtn = document.getElementById("togglePinVisibilityBtn");
-  const resetPinBtn = document.getElementById("resetPinFromLoginBtn");
 
   if (togglePinBtn && pinInput) {
     togglePinBtn.addEventListener("click", () => {
@@ -41,40 +47,18 @@ function initAdminAuthForm() {
     });
   }
 
-  if (resetPinBtn && pinInput) {
-    resetPinBtn.addEventListener("click", () => {
-      const verifyInput = prompt(
-        "To reset your Admin PIN back to default (admin123), enter your registered store phone number (e.g. 08148880378) or email:"
-      );
-      if (!verifyInput) return;
-
-      const cleaned = verifyInput.trim().toLowerCase().replace(/\s+/g, "");
-      const validPhones = ["08148880378", "2348148880378", "+2348148880378", "09028646068", "2349028646068", "+2349028646068"];
-      const validEmail = (BUSINESS_CONFIG.email || "successfulwellnessherbs@gmail.com").toLowerCase();
-
-      if (validPhones.includes(cleaned) || cleaned === validEmail) {
-        const defaultPin = DataStore.resetAdminPin();
-        const currentPinDisplay = document.getElementById("displayCurrentPin");
-        if (currentPinDisplay) currentPinDisplay.textContent = defaultPin;
-        pinInput.value = defaultPin;
-        showToast(`Verified! Admin PIN reset to default (${defaultPin}). Click Unlock to log in.`, "success");
-      } else {
-        showToast("Verification failed. Phone number or email did not match store records.", "error");
-      }
-    });
-  }
-
   if (loginForm) {
-    loginForm.addEventListener("submit", (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const enteredPin = pinInput.value.trim();
 
-      if (DataStore.verifyAdminPin(enteredPin)) {
-        sessionStorage.setItem("swh_admin_logged_in", "true");
+      try {
+        await DataStore.loginAdminAsync(enteredPin);
         showToast("Welcome to Successful Wellness Herbs Admin Portal", "success");
-        checkAdminAuth();
-      } else {
-        showToast("Incorrect Admin PIN. Please try again.", "error");
+        pinInput.value = "";
+        await checkAdminAuth();
+      } catch (err) {
+        showToast(err.message || "Incorrect Admin PIN. Please try again.", "error");
         pinInput.value = "";
         pinInput.focus();
       }
@@ -83,10 +67,10 @@ function initAdminAuthForm() {
 
   const logoutBtn = document.getElementById("adminLogoutBtn");
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      sessionStorage.removeItem("swh_admin_logged_in");
+    logoutBtn.addEventListener("click", async () => {
+      await DataStore.logoutAdminAsync();
       showToast("Logged out of Admin Portal", "info");
-      checkAdminAuth();
+      await checkAdminAuth();
     });
   }
 }
@@ -112,14 +96,84 @@ function initAdminNavigation() {
 
 // Refresh Entire Dashboard
 function refreshDashboard() {
+  populateCategorySelects();
   renderStats();
   renderProductsTable();
   renderReviewsTable();
-  const currentPinDisplay = document.getElementById("displayCurrentPin");
-  if (currentPinDisplay) {
-    currentPinDisplay.textContent = DataStore.getAdminPin();
-  }
 }
+
+// Populate Category Dropdowns & Handle Create / Delete Categories
+function populateCategorySelects(selectedCategory = "") {
+  const categories = DataStore.getCategories();
+  const selects = [
+    document.getElementById("newProductCategory"),
+    document.getElementById("editProductCategory")
+  ];
+
+  selects.forEach(sel => {
+    if (!sel) return;
+    const prevValue = selectedCategory || sel.value;
+    let html = "";
+    const list = [...categories];
+    if (prevValue && !list.includes(prevValue)) {
+      list.push(prevValue);
+    }
+    list.forEach(cat => {
+      html += `<option value="${cat}">${cat}</option>`;
+    });
+    sel.innerHTML = html;
+    if (prevValue && list.includes(prevValue)) {
+      sel.value = prevValue;
+    }
+  });
+}
+
+window.handleCreateCategory = async (inputId, selectId) => {
+  const inputEl = document.getElementById(inputId);
+  const selectEl = document.getElementById(selectId);
+  if (!inputEl) return;
+
+  const newCatName = inputEl.value.trim();
+  if (!newCatName) {
+    showToast("Please type a category name to add.", "error");
+    inputEl.focus();
+    return;
+  }
+
+  try {
+    const savedCat = await DataStore.addCategoryAsync(newCatName);
+    populateCategorySelects(savedCat);
+    if (selectEl && savedCat) {
+      selectEl.value = savedCat;
+    }
+    inputEl.value = "";
+    showToast(`Category "${savedCat}" added and selected!`, "success");
+  } catch (err) {
+    showToast(err.message || "Failed to add category", "error");
+  }
+};
+
+window.handleDeleteCategory = async (selectId) => {
+  const selectEl = document.getElementById(selectId);
+  if (!selectEl || !selectEl.value) return;
+
+  const catToDelete = selectEl.value;
+  const categories = DataStore.getCategories();
+  if (categories.length <= 1) {
+    showToast("At least one category must remain.", "error");
+    return;
+  }
+
+  if (confirm(`Delete the category "${catToDelete}" from the category list?`)) {
+    try {
+      await DataStore.deleteCategoryAsync(catToDelete);
+      populateCategorySelects();
+      showToast(`Category "${catToDelete}" removed.`, "info");
+    } catch (err) {
+      showToast(err.message || "Failed to delete category", "error");
+    }
+  }
+};
 
 // Stats Cards
 async function renderStats() {
@@ -149,15 +203,16 @@ function initProductForms() {
   const newProductPresetThumbs = document.querySelectorAll("#newProductPresets .preset-thumb");
 
   if (newProductImgFile) {
-    newProductImgFile.addEventListener("change", (e) => {
+    newProductImgFile.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          currentNewProductImage = event.target.result;
+        try {
+          currentNewProductImage = await DataStore.compressImageFile(file, 900, 0.78);
           if (newProductImgPreview) newProductImgPreview.src = currentNewProductImage;
-        };
-        reader.readAsDataURL(file);
+        } catch (err) {
+          newProductImgFile.value = "";
+          showToast(err.message || "Only JPG, JPEG, PNG, and WEBP images under 3 MB are allowed.", "error");
+        }
       }
     });
   }
@@ -174,7 +229,7 @@ function initProductForms() {
   // Handle Add Product Form Submission
   const addProductForm = document.getElementById("addProductForm");
   if (addProductForm) {
-    addProductForm.addEventListener("submit", (e) => {
+    addProductForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const name = document.getElementById("newProductName").value.trim();
@@ -194,27 +249,29 @@ function initProductForms() {
         return;
       }
 
-      DataStore.addProduct({
-        name,
-        category,
-        price,
-        oldPrice,
-        inStock,
-        featured,
-        image: currentNewProductImage,
-        shortDesc,
-        description,
-        benefits,
-        ingredients,
-        usage
-      });
+      try {
+        await DataStore.addProductAsync({
+          name,
+          category,
+          price,
+          oldPrice,
+          inStock,
+          featured,
+          image: currentNewProductImage,
+          shortDesc,
+          description,
+          benefits,
+          ingredients,
+          usage
+        });
 
-      showToast(`Successfully added "${name}" to shop!`, "success");
-      addProductForm.reset();
-      refreshDashboard();
-
-      // Close modal
-      document.getElementById("addProductModal")?.classList.remove("active");
+        showToast(`Successfully added "${name}" to shop!`, "success");
+        addProductForm.reset();
+        refreshDashboard();
+        document.getElementById("addProductModal")?.classList.remove("active");
+      } catch (err) {
+        showToast(err.message || "Failed to add product", "error");
+      }
     });
   }
 
@@ -225,15 +282,16 @@ function initProductForms() {
   const editProductPresetThumbs = document.querySelectorAll("#editProductPresets .preset-thumb");
 
   if (editProductImgFile) {
-    editProductImgFile.addEventListener("change", (e) => {
+    editProductImgFile.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          currentEditProductImage = event.target.result;
+        try {
+          currentEditProductImage = await DataStore.compressImageFile(file, 900, 0.78);
           if (editProductImgPreview) editProductImgPreview.src = currentEditProductImage;
-        };
-        reader.readAsDataURL(file);
+        } catch (err) {
+          editProductImgFile.value = "";
+          showToast(err.message || "Only JPG, JPEG, PNG, and WEBP images under 3 MB are allowed.", "error");
+        }
       }
     });
   }
@@ -248,7 +306,7 @@ function initProductForms() {
   });
 
   if (editProductForm) {
-    editProductForm.addEventListener("submit", (e) => {
+    editProductForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const id = document.getElementById("editProductId").value;
@@ -264,35 +322,43 @@ function initProductForms() {
       const ingredients = document.getElementById("editProductIngredients").value.trim();
       const usage = document.getElementById("editProductUsage").value.trim();
 
-      DataStore.updateProduct(id, {
-        name,
-        category,
-        price,
-        oldPrice,
-        inStock,
-        featured,
-        image: currentEditProductImage,
-        shortDesc,
-        description,
-        benefits,
-        ingredients,
-        usage
-      });
+      try {
+        await DataStore.updateProductAsync(id, {
+          name,
+          category,
+          price,
+          oldPrice,
+          inStock,
+          featured,
+          image: currentEditProductImage,
+          shortDesc,
+          description,
+          benefits,
+          ingredients,
+          usage
+        });
 
-      showToast(`Updated "${name}" successfully!`, "success");
-      refreshDashboard();
-      document.getElementById("editProductModal")?.classList.remove("active");
+        showToast(`Updated "${name}" successfully!`, "success");
+        refreshDashboard();
+        document.getElementById("editProductModal")?.classList.remove("active");
+      } catch (err) {
+        showToast(err.message || "Failed to update product", "error");
+      }
     });
   }
 
   // Reset products button
   const resetProdsBtn = document.getElementById("btnResetProducts");
   if (resetProdsBtn) {
-    resetProdsBtn.addEventListener("click", () => {
+    resetProdsBtn.addEventListener("click", async () => {
       if (confirm("Are you sure you want to restore default products? All custom products will be reset.")) {
-        DataStore.resetProducts();
-        showToast("Products restored to defaults", "info");
-        refreshDashboard();
+        try {
+          await DataStore.resetProductsAsync();
+          showToast("Products restored to defaults", "info");
+          refreshDashboard();
+        } catch (err) {
+          showToast(err.message || "Failed to reset products", "error");
+        }
       }
     });
   }
@@ -358,6 +424,7 @@ window.openEditProductModal = (id) => {
 
   document.getElementById("editProductId").value = product.id;
   document.getElementById("editProductName").value = product.name;
+  populateCategorySelects(product.category);
   document.getElementById("editProductCategory").value = product.category;
   document.getElementById("editProductPrice").value = product.price;
   document.getElementById("editProductOldPrice").value = product.oldPrice || "";
@@ -376,11 +443,15 @@ window.openEditProductModal = (id) => {
   modal.classList.add("active");
 };
 
-window.confirmDeleteProduct = (id, name) => {
+window.confirmDeleteProduct = async (id, name) => {
   if (confirm(`Are you sure you want to delete "${name}"?`)) {
-    DataStore.deleteProduct(id);
-    showToast(`Deleted "${name}"`, "error");
-    refreshDashboard();
+    try {
+      await DataStore.deleteProductAsync(id);
+      showToast(`Deleted "${name}"`, "error");
+      refreshDashboard();
+    } catch (err) {
+      showToast(err.message || "Failed to delete product", "error");
+    }
   }
 };
 
@@ -588,62 +659,67 @@ window.changeAdminReviewPage = (dir) => {
 };
 
 window.toggleReviewStatus = async (id) => {
-  await DataStore.toggleReviewApprovalAsync(id);
-  refreshDashboard();
-  showToast("Review visibility updated", "info");
+  try {
+    await DataStore.toggleReviewApprovalAsync(id);
+    refreshDashboard();
+    showToast("Review visibility updated", "info");
+  } catch (err) {
+    showToast(err.message || "Failed to update review", "error");
+  }
 };
 
 window.confirmDeleteReview = async (id) => {
   if (confirm("Are you sure you want to permanently delete this review?")) {
-    await DataStore.deleteReviewAsync(id);
-    refreshDashboard();
-    showToast("Review removed", "error");
+    try {
+      await DataStore.deleteReviewAsync(id);
+      refreshDashboard();
+      showToast("Review removed", "error");
+    } catch (err) {
+      showToast(err.message || "Failed to delete review", "error");
+    }
   }
 };
 
-// Settings Tab
+// Settings Tab (Server-side Bcrypt PIN Update & Admin-Only Database Export)
 function initSettingsForm() {
   const pinForm = document.getElementById("changePinForm");
   const exportBtn = document.getElementById("btnExportBackup");
-  const currentPinDisplay = document.getElementById("displayCurrentPin");
-
-  if (currentPinDisplay) {
-    currentPinDisplay.textContent = DataStore.getAdminPin();
-  }
 
   if (pinForm) {
-    pinForm.addEventListener("submit", (e) => {
+    pinForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const newPin = document.getElementById("newAdminPin").value.trim();
 
-      if (newPin.length < 4) {
-        showToast("PIN must be at least 4 characters.", "error");
+      if (newPin.length < 6) {
+        showToast("PIN must be at least 6 characters.", "error");
         return;
       }
 
-      DataStore.setAdminPin(newPin);
-      showToast("Admin PIN updated successfully!", "success");
-      pinForm.reset();
-      if (currentPinDisplay) currentPinDisplay.textContent = newPin;
+      try {
+        await DataStore.updateAdminPinAsync(newPin);
+        showToast("Admin PIN hashed and updated on server!", "success");
+        pinForm.reset();
+      } catch (err) {
+        showToast(err.message || "Failed to update PIN", "error");
+      }
     });
   }
 
   if (exportBtn) {
-    exportBtn.addEventListener("click", () => {
-      const data = {
-        products: DataStore.getProducts(),
-        reviews: DataStore.getReviews(),
-        exportedAt: new Date().toISOString()
-      };
-
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `successful_herbs_backup_${Date.now()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast("Data backup file downloaded", "success");
+    exportBtn.addEventListener("click", async () => {
+      try {
+        const data = await DataStore.exportDatabaseBackupAsync();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `successful_herbs_backup_${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("Database backup exported from server", "success");
+      } catch (err) {
+        showToast(err.message || "Unauthorized to export database backup", "error");
+      }
     });
   }
 }

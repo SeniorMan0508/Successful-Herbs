@@ -194,14 +194,14 @@
     </div>
   </section>
 
-  <!-- Featured Products Section -->
+  <!-- Latest Products Section -->
   <section class="section" id="featured-products">
     <div class="container">
       <div class="section-header">
-        <span class="section-tag">Featured Remedies</span>
-        <h2 class="section-title">Most Requested Herbal Formulations</h2>
+        <span class="section-tag">New Arrivals &bull; Latest Remedies</span>
+        <h2 class="section-title">Latest Herbal Formulations</h2>
         <p class="section-subtitle">
-          Formulated to combat infections, fatigue, digestive disorders, hormonal imbalance, and cleanse toxins. Order directly to WhatsApp!
+          Explore our newest traditional herbal mixtures formulated to combat infections, fatigue, digestive disorders, hormonal imbalance, and cleanse toxins.
         </p>
       </div>
 
@@ -559,17 +559,22 @@
   <script src="js/app.js"></script>
   <script src="js/reviews.js"></script>
   <script>
-    // Populate Featured Products on Homepage
-    document.addEventListener("DOMContentLoaded", () => {
+    // Populate Latest 6 Products on Homepage
+    function renderHomeLatestProducts() {
       const container = document.getElementById("homeFeaturedProductsGrid");
       if (container && window.DataStore) {
-        const products = DataStore.getProducts().slice(0, 6);
+        const latestProducts = DataStore.getProducts().slice(0, 6);
         let html = "";
-        products.forEach(p => {
+        latestProducts.forEach(p => {
           html += createProductCardHTML(p);
         });
         container.innerHTML = html;
       }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderHomeLatestProducts();
+      window.addEventListener("productsUpdated", renderHomeLatestProducts);
     });
   </script>
 </body>

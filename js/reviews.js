@@ -30,14 +30,18 @@ function initReviewForm() {
   const productSelect = document.getElementById("reviewProductSelect");
 
   // Populate product dropdown if present
-  if (productSelect && window.DataStore) {
-    const products = DataStore.getProducts();
-    let options = '<option value="General Wellness Herbs">General Wellness / Consultation</option>';
-    products.forEach(p => {
-      options += `<option value="${p.name}">${p.name}</option>`;
-    });
-    productSelect.innerHTML = options;
+  function populateReviewProductSelect() {
+    if (productSelect && window.DataStore) {
+      const products = DataStore.getProducts();
+      let options = '<option value="General Wellness Herbs">General Wellness / Consultation</option>';
+      products.forEach(p => {
+        options += `<option value="${p.name}">${p.name}</option>`;
+      });
+      productSelect.innerHTML = options;
+    }
   }
+  populateReviewProductSelect();
+  window.addEventListener("productsUpdated", populateReviewProductSelect);
 
   // Star Rating Interaction
   if (starsContainer) {
@@ -107,8 +111,9 @@ function initReviewForm() {
           previewImg.src = uploadedPhotoBase64;
           previewWrap.style.display = "block";
         }
-      } catch (_) {
-        showToast("Could not process image. Please try another photo.", "error");
+      } catch (err) {
+        if (photoInput) photoInput.value = "";
+        showToast(err.message || "Only JPG, JPEG, PNG, and WEBP images under 3 MB are allowed.", "error");
       }
     });
   }
@@ -137,8 +142,13 @@ function initReviewForm() {
         return;
       }
 
-      if (!text) {
-        showToast("Please write your comment or review experience.", "error");
+      if (!text || text.length < 3) {
+        showToast("Please write at least 3 characters for your review.", "error");
+        return;
+      }
+
+      if (text.length > 1000) {
+        showToast("Review text cannot exceed 1000 characters.", "error");
         return;
       }
 
@@ -151,30 +161,32 @@ function initReviewForm() {
         rating: currentRatingSelection,
         productName: productName,
         text: text,
-        photoUrl: uploadedPhotoBase64 || "",
-        isApproved: true,
-        isFeatured: true
+        photoUrl: uploadedPhotoBase64 || ""
       };
 
-      await DataStore.addReviewAsync(newReview);
-      if (submitBtn) submitBtn.disabled = false;
+      try {
+        await DataStore.addReviewAsync(newReview);
+        showToast("Thank you! Your review has been successfully posted.", "success");
 
-      showToast("Thank you! Your review has been successfully posted.", "success");
+        // Reset form
+        form.reset();
+        uploadedPhotoBase64 = "";
+        if (previewWrap) previewWrap.style.display = "none";
+        if (starsContainer) {
+          const stars = starsContainer.querySelectorAll(".rating-star");
+          stars.forEach(s => {
+            s.classList.add("selected", "fas");
+            s.classList.remove("far");
+          });
+          currentRatingSelection = 5;
+        }
 
-      // Reset form
-      form.reset();
-      uploadedPhotoBase64 = "";
-      if (previewWrap) previewWrap.style.display = "none";
-      if (starsContainer) {
-        const stars = starsContainer.querySelectorAll(".rating-star");
-        stars.forEach(s => {
-          s.classList.add("selected", "fas");
-          s.classList.remove("far");
-        });
-        currentRatingSelection = 5;
+        renderReviewsSection(currentReviewFilter, true);
+      } catch (err) {
+        showToast(err.message || "Failed to submit review.", "error");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
       }
-
-      renderReviewsSection(currentReviewFilter, true);
     });
   }
 }

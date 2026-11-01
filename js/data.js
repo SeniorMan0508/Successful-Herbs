@@ -14,8 +14,7 @@ const BUSINESS_CONFIG = {
   email: "Successfulwellnessherbs@gmail.com",
   address: "Ojere via Moshood ABIOLA polytechnic Pansheke Abeokuta Ogun state Nigeria",
   logo: "images/brand-logo.jpeg",
-  currency: "₦",
-  adminPinDefault: "admin123"
+  currency: "₦"
 };
 
 // Default initial products catalog
@@ -219,106 +218,207 @@ const DEFAULT_REVIEWS = [
   }
 ];
 
-// LocalStorage Keys
+// Default product categories
+const DEFAULT_CATEGORIES = [
+  "Immunity & Detox",
+  "Vitality & Strength",
+  "Digestion & Ulcer",
+  "Hormonal & Fertility",
+  "Skin Wellness",
+  "General Health"
+];
+
+// LocalStorage Keys (Cart & Session Token)
 const STORAGE_KEYS = {
-  PRODUCTS: "swh_products_v1",
   REVIEWS: "swh_reviews_v1",
   CART: "swh_cart_v1",
-  ADMIN_PIN: "swh_admin_pin_v1",
-  ORDERS: "swh_orders_v1"
+  ADMIN_TOKEN: "swh_admin_token_v1"
 };
 
-// Storage Utilities
+let _productsCache = [...DEFAULT_PRODUCTS];
+let _categoriesCache = [...DEFAULT_CATEGORIES];
+
+// Storage & Server API Utilities
 const DataStore = {
-  // Products
-  getProducts() {
+  // Admin Auth Token Helper
+  getAdminToken() {
+    return sessionStorage.getItem(STORAGE_KEYS.ADMIN_TOKEN) || "";
+  },
+
+  setAdminToken(token) {
+    if (token) {
+      sessionStorage.setItem(STORAGE_KEYS.ADMIN_TOKEN, token);
+    } else {
+      sessionStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN);
+    }
+  },
+
+  getAuthHeaders(extra = {}) {
+    const token = this.getAdminToken();
+    return token
+      ? { "Content-Type": "application/json", "Authorization": `Bearer ${token}`, ...extra }
+      : { "Content-Type": "application/json", ...extra };
+  },
+
+  // Sync Products & Categories from Server Database (/api/products)
+  async syncFromServer() {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      const res = await fetch("/api/products");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.items)) {
+          _productsCache = data.items;
+        }
+        if (Array.isArray(data.categories) && data.categories.length > 0) {
+          _categoriesCache = data.categories;
+        }
+        window.dispatchEvent(new Event("categoriesUpdated"));
+        window.dispatchEvent(new Event("productsUpdated"));
+        return data;
       }
     } catch (e) {
-      console.error("Error reading products:", e);
+      console.error("Failed to sync products from server:", e);
     }
-    this.saveProducts(DEFAULT_PRODUCTS);
-    return DEFAULT_PRODUCTS;
+    return { items: _productsCache, categories: _categoriesCache };
   },
 
-  saveProducts(products) {
-    try {
-      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-      window.dispatchEvent(new Event("productsUpdated"));
-      return true;
-    } catch (e) {
-      console.error("Error saving products:", e);
-      return false;
+  // Categories
+  getCategories() {
+    return [..._categoriesCache];
+  },
+
+  async addCategoryAsync(name) {
+    if (!name || !name.trim()) return null;
+    const clean = name.trim();
+    const res = await fetch("/api/categories", {
+      method: "POST",
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ name: clean })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to add category");
     }
-  },
-
-  getProductById(id) {
-    return this.getProducts().find(p => p.id === id) || null;
-  },
-
-  addProduct(productData) {
-    const products = this.getProducts();
-    const newProduct = {
-      id: "prod_" + Date.now(),
-      name: productData.name || "Untitled Herbal Product",
-      category: productData.category || "General Health",
-      price: Number(productData.price) || 0,
-      oldPrice: Number(productData.oldPrice) || 0,
-      rating: 5.0,
-      reviewCount: 0,
-      image: productData.image || "images/product-herbal-mixture.jpg",
-      featured: Boolean(productData.featured),
-      inStock: productData.inStock !== false,
-      shortDesc: productData.shortDesc || "",
-      description: productData.description || "",
-      benefits: Array.isArray(productData.benefits) 
-        ? productData.benefits 
-        : (productData.benefits || "").split("\n").map(b => b.trim()).filter(Boolean),
-      ingredients: productData.ingredients || "100% Wildcrafted Nigerian Herbs",
-      usage: productData.usage || "Take as directed by herbalist."
-    };
-    products.unshift(newProduct);
-    this.saveProducts(products);
-    return newProduct;
-  },
-
-  updateProduct(id, updatedFields) {
-    const products = this.getProducts();
-    const index = products.findIndex(p => p.id === id);
-    if (index === -1) return null;
-
-    if (typeof updatedFields.benefits === "string") {
-      updatedFields.benefits = updatedFields.benefits.split("\n").map(b => b.trim()).filter(Boolean);
+    const data = await res.json();
+    if (Array.isArray(data.items)) {
+      _categoriesCache = data.items;
+      window.dispatchEvent(new Event("categoriesUpdated"));
     }
-    if (updatedFields.price) updatedFields.price = Number(updatedFields.price);
-    if (updatedFields.oldPrice) updatedFields.oldPrice = Number(updatedFields.oldPrice);
-
-    products[index] = { ...products[index], ...updatedFields };
-    this.saveProducts(products);
-    return products[index];
+    return data.name || clean;
   },
 
-  deleteProduct(id) {
-    let products = this.getProducts();
-    products = products.filter(p => p.id !== id);
-    this.saveProducts(products);
+  async deleteCategoryAsync(name) {
+    if (!name) return false;
+    const res = await fetch(`/api/categories/${encodeURIComponent(name)}`, {
+      method: "DELETE",
+      headers: this.getAuthHeaders()
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to delete category");
+    }
+    const data = await res.json();
+    if (Array.isArray(data.items)) {
+      _categoriesCache = data.items;
+      window.dispatchEvent(new Event("categoriesUpdated"));
+    }
     return true;
   },
 
-  resetProducts() {
-    this.saveProducts(DEFAULT_PRODUCTS);
-    return DEFAULT_PRODUCTS;
+  // Products (Loaded from /api/products)
+  getProducts() {
+    return [..._productsCache];
   },
 
-  // Client-side Image Compression (Reduces 4MB+ photos to ~45KB JPEG for fast loading & storage)
+  getProductById(id) {
+    return _productsCache.find(p => p.id === id) || null;
+  },
+
+  async addProductAsync(productData) {
+    const res = await fetch("/api/products", {
+      method: "POST",
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(productData)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to add product");
+    }
+    const data = await res.json();
+    if (data.item) {
+      _productsCache.unshift(data.item);
+      if (data.item.category && !_categoriesCache.includes(data.item.category)) {
+        _categoriesCache.push(data.item.category);
+        window.dispatchEvent(new Event("categoriesUpdated"));
+      }
+      window.dispatchEvent(new Event("productsUpdated"));
+    }
+    return data.item;
+  },
+
+  async updateProductAsync(id, updatedFields) {
+    const res = await fetch(`/api/products/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(updatedFields)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to update product");
+    }
+    const data = await res.json();
+    if (data.item) {
+      const idx = _productsCache.findIndex(p => p.id === id);
+      if (idx > -1) _productsCache[idx] = data.item;
+      window.dispatchEvent(new Event("productsUpdated"));
+    }
+    return data.item;
+  },
+
+  async deleteProductAsync(id) {
+    const res = await fetch(`/api/products/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: this.getAuthHeaders()
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to delete product");
+    }
+    _productsCache = _productsCache.filter(p => p.id !== id);
+    window.dispatchEvent(new Event("productsUpdated"));
+    return true;
+  },
+
+  async resetProductsAsync() {
+    const res = await fetch("/api/products/reset", {
+      method: "POST",
+      headers: this.getAuthHeaders()
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to reset products");
+    }
+    const data = await res.json();
+    if (Array.isArray(data.items)) _productsCache = data.items;
+    if (Array.isArray(data.categories)) _categoriesCache = data.categories;
+    window.dispatchEvent(new Event("categoriesUpdated"));
+    window.dispatchEvent(new Event("productsUpdated"));
+    return _productsCache;
+  },
+
+  // Client-side Image Validation & Compression (Accepts only JPG, JPEG, PNG, WEBP <= 3 MB)
   compressImageFile(file, maxDimension = 900, quality = 0.78) {
     return new Promise((resolve, reject) => {
-      if (!file || !file.type.startsWith("image/")) {
-        return reject(new Error("Invalid image file"));
+      if (!file) {
+        return reject(new Error("No image file provided."));
+      }
+      const allowedMimes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+      const extMatch = (file.name || "").toLowerCase().match(/\.(jpg|jpeg|png|webp)$/);
+      if (!allowedMimes.includes((file.type || "").toLowerCase()) || !extMatch) {
+        return reject(new Error("Invalid file type. Only JPG, JPEG, PNG, and WEBP images are allowed."));
+      }
+      if (file.size > 3 * 1024 * 1024) {
+        return reject(new Error("Image file is too large. Maximum allowed size is 3 MB."));
       }
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -342,10 +442,10 @@ const DataStore = {
           const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
           resolve(compressedDataUrl);
         };
-        img.onerror = () => resolve(event.target.result);
+        img.onerror = () => reject(new Error("Corrupted or invalid image file."));
         img.src = event.target.result;
       };
-      reader.onerror = reject;
+      reader.onerror = () => reject(new Error("Failed to read image file."));
       reader.readAsDataURL(file);
     });
   },
@@ -389,7 +489,9 @@ const DataStore = {
         offset: String(offset),
         includeHidden: includeHidden ? "1" : "0"
       });
-      const res = await fetch(`/api/reviews?${params.toString()}`);
+      const res = await fetch(`/api/reviews?${params.toString()}`, {
+        headers: includeHidden ? this.getAuthHeaders() : {}
+      });
       if (res.ok) {
         return await res.json();
       }
@@ -443,21 +545,20 @@ const DataStore = {
   },
 
   async addReviewAsync(reviewData) {
-    try {
-      const res = await fetch("/api/reviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reviewData)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const reviews = this.getReviews();
-        reviews.unshift(data.item);
-        this.saveReviews(reviews);
-        return data.item;
-      }
-    } catch (_) {}
-    return this.addReview(reviewData);
+    const res = await fetch("/api/reviews", {
+      method: "POST",
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(reviewData)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to submit review");
+    }
+    const data = await res.json();
+    const reviews = this.getReviews();
+    reviews.unshift(data.item);
+    this.saveReviews(reviews);
+    return data.item;
   },
 
   toggleReviewApproval(id) {
@@ -472,15 +573,17 @@ const DataStore = {
   },
 
   async toggleReviewApprovalAsync(id) {
-    try {
-      const res = await fetch(`/api/reviews/${encodeURIComponent(id)}`, { method: "PATCH" });
-      if (res.ok) {
-        const data = await res.json();
-        this.toggleReviewApproval(id);
-        return data.item;
-      }
-    } catch (_) {}
-    return this.toggleReviewApproval(id);
+    const res = await fetch(`/api/reviews/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: this.getAuthHeaders()
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Unauthorized to update review");
+    }
+    const data = await res.json();
+    this.toggleReviewApproval(id);
+    return data.item;
   },
 
   deleteReview(id) {
@@ -491,14 +594,16 @@ const DataStore = {
   },
 
   async deleteReviewAsync(id) {
-    try {
-      const res = await fetch(`/api/reviews/${encodeURIComponent(id)}`, { method: "DELETE" });
-      if (res.ok) {
-        this.deleteReview(id);
-        return true;
-      }
-    } catch (_) {}
-    return this.deleteReview(id);
+    const res = await fetch(`/api/reviews/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: this.getAuthHeaders()
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Unauthorized to delete review");
+    }
+    this.deleteReview(id);
+    return true;
   },
 
   resetReviews() {
@@ -507,9 +612,14 @@ const DataStore = {
   },
 
   async resetReviewsAsync() {
-    try {
-      await fetch("/api/reviews/reset", { method: "POST" });
-    } catch (_) {}
+    const res = await fetch("/api/reviews/reset", {
+      method: "POST",
+      headers: this.getAuthHeaders()
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Unauthorized to reset reviews");
+    }
     return this.resetReviews();
   },
 
@@ -624,31 +734,78 @@ Hello *Successful Wellness Herbs*, I would like to place and confirm this order 
     return `https://wa.me/${phone}?text=${encodeURIComponent(baseText)}`;
   },
 
-  // Admin PIN Security
-  getAdminPin() {
-    const stored = localStorage.getItem(STORAGE_KEYS.ADMIN_PIN);
-    return stored && stored.trim().length >= 4 ? stored.trim() : BUSINESS_CONFIG.adminPinDefault;
+  // Server-Side Admin Authentication & PIN Security (Bcrypt Hashed + Token Protected)
+  async loginAdminAsync(enteredPin) {
+    const res = await fetch("/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pin: (enteredPin || "").trim() })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Incorrect Admin PIN.");
+    }
+    const data = await res.json();
+    this.setAdminToken(data.token);
+    return data.token;
   },
 
-  setAdminPin(newPin) {
-    if (!newPin || newPin.trim().length < 4) return false;
-    localStorage.setItem(STORAGE_KEYS.ADMIN_PIN, newPin.trim());
+  async logoutAdminAsync() {
+    try {
+      await fetch("/api/admin/logout", {
+        method: "POST",
+        headers: this.getAuthHeaders()
+      });
+    } catch (_) {}
+    this.setAdminToken("");
+  },
+
+  async verifyAdminSessionAsync() {
+    const token = this.getAdminToken();
+    if (!token) return false;
+    try {
+      const res = await fetch("/api/admin/session", {
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.authenticated) this.setAdminToken("");
+        return Boolean(data.authenticated);
+      }
+    } catch (_) {}
+    return false;
+  },
+
+  async updateAdminPinAsync(newPin) {
+    const cleanPin = (newPin || "").trim();
+    if (cleanPin.length < 6) {
+      throw new Error("PIN must be at least 6 characters.");
+    }
+    const res = await fetch("/api/admin/pin", {
+      method: "PUT",
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ newPin: cleanPin })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to update Admin PIN");
+    }
     return true;
   },
 
-  resetAdminPin() {
-    localStorage.removeItem(STORAGE_KEYS.ADMIN_PIN);
-    return BUSINESS_CONFIG.adminPinDefault;
-  },
-
-  verifyAdminPin(enteredPin) {
-    if (!enteredPin) return false;
-    const clean = enteredPin.trim();
-    const currentPin = this.getAdminPin();
-    return clean === currentPin;
+  async exportDatabaseBackupAsync() {
+    const res = await fetch("/api/admin/export", {
+      headers: this.getAuthHeaders()
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Unauthorized to export database backup");
+    }
+    return await res.json();
   }
 };
 
-// Global expose
+// Global expose & automatic startup sync from /api/products
 window.BUSINESS_CONFIG = BUSINESS_CONFIG;
 window.DataStore = DataStore;
+DataStore.syncFromServer();
